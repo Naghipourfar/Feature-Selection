@@ -20,6 +20,7 @@ N_DISEASES = 34
 N_BATCHES = 250
 N_EPOCHS = 100
 N_BATCH_LEARN = 5
+LAMBDA = 0.05
 
 
 def weight_initializer(shape, stddev=0.01, name=None):
@@ -118,7 +119,10 @@ def train(x_data, y_data, k):
     # Final Layer --> Fully Connected (N_DISEASES Neurons)
     final_output = fully_connected(layer_4, weights['out'], biases['out'], name='l_out')
 
-    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=final_output, labels=y), name='loss')
+    regularizer = tf.nn.l2_loss(weights['l1']) + tf.nn.l2_loss(weights['l2']) + tf.nn.l2_loss(
+        weights['l3']) + tf.nn.l2_loss(weights['l4']) + tf.nn.l2_loss(weights['out'])
+    loss = tf.reduce_mean(LAMBDA * regularizer + tf.nn.sigmoid_cross_entropy_with_logits(logits=final_output, labels=y),
+                          name='loss')
     optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, name='optimizer')
     train_step = optimizer.minimize(loss, name='train_step')
 
@@ -223,8 +227,8 @@ def random_train(k):
 
 
 if __name__ == '__main__':
-    x_filename = "../Data/fpkm_normalized_new.csv"
-    y_filename = "../Data/disease_new.csv"
+    x_filename = "../Data/fpkm_normalized.csv"
+    y_filename = "../Data/disease.csv"
     # if not os.path.isfile(x_filename) or not os.path.isfile(y_filename):
     #     x_filename = shrink_data("../Data/fpkm_normalized")
     #     y_filename = shrink_data("../Data/disease")
@@ -235,10 +239,11 @@ if __name__ == '__main__':
     y_train = modify_output(y_train)
     y_train = pd.DataFrame(y_train)
     print("Training neural network!")
-    # from multiprocessing import Pool
-    # N_PROCESSES = 1
+    from multiprocessing import Pool
+
+    # N_PROCESSES = 3
     # with Pool(N_PROCESSES) as p:
-    #     p.map(random_train, [35+i for i in range(N_PROCESSES)])
+    #     p.map(random_train, [28+i for i in range(N_PROCESSES)])
     random_train(N_FEATURES)
     # for k in range(25, 35):
     #     print("k = {0}".format(k))
