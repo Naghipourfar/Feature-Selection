@@ -81,10 +81,10 @@ def train(x_data, y_data, k):
     y = tf.placeholder(tf.float32, shape=[None, N_DISEASES])
     neurons = {
         'in': N_FEATURES,
-        'l1': 64,
-        'l2': 128,
-        'l3': 256,
-        'l4': 128,
+        'l1': 256,
+        'l2': 512,
+        'l3': 1024,
+        'l4': 256,
         'out': N_DISEASES
     }
     weights = {
@@ -224,8 +224,8 @@ def random_train(k):
 
 
 if __name__ == '__main__':
-    x_filename = "../Data/fpkm_normalized.csv"
-    y_filename = "../Data/disease.csv"
+    x_filename = "../Data/fpkm_normalized_new.csv"
+    y_filename = "../Data/disease_new.csv"
     # if not os.path.isfile(x_filename) or not os.path.isfile(y_filename):
     #     x_filename = shrink_data("../Data/fpkm_normalized")
     #     y_filename = shrink_data("../Data/disease")
@@ -236,11 +236,11 @@ if __name__ == '__main__':
     y_train = modify_output(y_train)
     y_train = pd.DataFrame(y_train)
     print("Training neural network!")
-    from multiprocessing import Pool
-    N_PROCESSES = 1
-    with Pool(N_PROCESSES) as p:
-        p.map(random_train, [35+i for i in range(N_PROCESSES)])
-
+    # from multiprocessing import Pool
+    # N_PROCESSES = 1
+    # with Pool(N_PROCESSES) as p:
+    #     p.map(random_train, [35+i for i in range(N_PROCESSES)])
+    random_train(N_FEATURES)
     # for k in range(25, 35):
     #     print("k = {0}".format(k))
     #     random_feature_indices = np.random.choice(N_FEATURES, k)
