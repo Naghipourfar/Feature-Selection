@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 import pandas as pd
-import random
 
 import matplotlib.pyplot as plt
 import os
@@ -16,7 +15,7 @@ SHRINK_THRESHOLD = 2000
 LEARNING_RATE = 0.05
 DROP_OUT = 0.5
 N_SAMPLES = 10787
-N_FEATURES = 19670
+N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 250
 N_EPOCHS = 100
@@ -104,7 +103,7 @@ def train(x_data, y_data, k):
         'out': bias_initializer(init_value=0.1, shape=[neurons['out']], name='b_out')
 
     }
-    # 1st Layer --> Fully Connected (16 Neurons)
+    # 1st Layer --> Fully Connected (256 Neurons)
     layer_1 = fully_connected(x, weights['l1'], biases['l1'], name='l1')
 
     # 2nd Layer --> Fully Connected (32 Neurons)
