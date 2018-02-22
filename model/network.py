@@ -198,6 +198,8 @@ def train(x_data, y_data, k):
     plt.legend(loc="upper right")
     plt.savefig('./model_{0}_{1}/loss.png'.format(k, validation_acc[-1]))
 
+    print("Plots have been saved!")
+
 
 def modify_output(target):
     global N_DISEASES
