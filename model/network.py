@@ -12,15 +12,15 @@ import os
 SHRINK_THRESHOLD = 2000
 
 # Hyper-Parameters
-LEARNING_RATE = 0.05
+LEARNING_RATE = 0.5
 DROP_OUT = 0.5
 N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
-N_BATCHES = 250
+N_BATCHES = 750
 N_EPOCHS = 100
-N_BATCH_LEARN = 5
-LAMBDA = 0.05
+N_BATCH_LEARN = 10
+LAMBDA = 0.1
 
 
 def weight_initializer(shape, stddev=0.01, name=None):
@@ -65,7 +65,7 @@ def fully_connected(input_data, weight, bias, name=None):
 
 def train(x_data, y_data, k):
     # Split data into train/test = 80%/20%
-    train_indices = np.random.choice(N_SAMPLES, round(N_SAMPLES * 0.8), replace=False)
+    train_indices = np.random.choice(N_SAMPLES, round(N_SAMPLES * 0.85), replace=False)
     validation_indices = np.array(list(set(range(N_SAMPLES)) - set(train_indices)))
 
     x_train = x_data.iloc[train_indices]
@@ -81,10 +81,10 @@ def train(x_data, y_data, k):
     y = tf.placeholder(tf.float32, shape=[None, N_DISEASES])
     neurons = {
         'in': N_FEATURES,
-        'l1': 256,
-        'l2': 512,
-        'l3': 1024,
-        'l4': 256,
+        'l1': 128,
+        'l2': 256,
+        'l3': 512,
+        'l4': 128,
         'out': N_DISEASES
     }
     weights = {
@@ -93,7 +93,6 @@ def train(x_data, y_data, k):
         'l3': weight_initializer(shape=[neurons['l2'], neurons['l3']], stddev=0.1, name='w3'),
         'l4': weight_initializer(shape=[neurons['l3'], neurons['l4']], stddev=0.1, name='w4'),
         'out': weight_initializer(shape=[neurons['l4'], neurons['out']], stddev=0.1, name='w_out')
-
     }
 
     biases = {
@@ -102,7 +101,6 @@ def train(x_data, y_data, k):
         'l3': bias_initializer(init_value=0.1, shape=[neurons['l3']], name='b3'),
         'l4': bias_initializer(init_value=0.1, shape=[neurons['l4']], name='b4'),
         'out': bias_initializer(init_value=0.1, shape=[neurons['out']], name='b_out')
-
     }
     # 1st Layer --> Fully Connected (256 Neurons)
     layer_1 = fully_connected(x, weights['l1'], biases['l1'], name='l1')
@@ -119,11 +117,12 @@ def train(x_data, y_data, k):
     # Final Layer --> Fully Connected (N_DISEASES Neurons)
     final_output = fully_connected(layer_4, weights['out'], biases['out'], name='l_out')
 
-    regularizer = tf.nn.l2_loss(weights['l1']) + tf.nn.l2_loss(weights['l2']) + tf.nn.l2_loss(
-        weights['l3']) + tf.nn.l2_loss(weights['l4']) + tf.nn.l2_loss(weights['out'])
-    loss = tf.reduce_mean(LAMBDA * regularizer + tf.nn.sigmoid_cross_entropy_with_logits(logits=final_output, labels=y),
-                          name='loss')
-    optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, name='optimizer')
+    # regularizer = tf.nn.l2_loss(weights['l1']) + tf.nn.l2_loss(weights['l2']) + tf.nn.l2_loss(
+    #     weights['l3']) + tf.nn.l2_loss(weights['l4']) + tf.nn.l2_loss(weights['out'])
+    loss = tf.reduce_mean(
+        tf.nn.sigmoid_cross_entropy_with_logits(logits=final_output, labels=y),
+        name='loss')
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=LEARNING_RATE, name='optimizer')
     train_step = optimizer.minimize(loss, name='train_step')
 
     init = tf.global_variables_initializer()
@@ -243,7 +242,14 @@ if __name__ == '__main__':
 
     # N_PROCESSES = 3
     # with Pool(N_PROCESSES) as p:
+    #     p.map(random_train, [25+i for i in range(N_PROCESSES)])
+    # with Pool(N_PROCESSES) as p:
     #     p.map(random_train, [28+i for i in range(N_PROCESSES)])
+    # with Pool(N_PROCESSES) as p:
+    #     p.map(random_train, [31+i for i in range(N_PROCESSES)])
+    # with Pool(2) as p:
+    #     p.map(random_train, [34+i for i in range(2)])
+
     random_train(N_FEATURES)
     # for k in range(25, 35):
     #     print("k = {0}".format(k))
