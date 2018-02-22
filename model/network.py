@@ -160,7 +160,7 @@ def train(x_data, y_data, k):
                 validation_acc.append(accuracy.eval(feed_dict))
             if (epoch + 1) % 5 == 0 or epoch == 0:
                 print("Epoch:", '%04d' % (epoch + 1), "\tValidation Accuracy={:.9f}".format(validation_acc[-1]),
-                      "\tValidation Loss={:4.4f}".format(validation_loss[-1]))
+                      "\tValidation Loss={:5.9f}".format(validation_loss[-1]))
             # Training Validation set
             # feed_dict = {x: x_validation_batch, y: y_validation_batch}
             # sess.run(train_step, feed_dict=feed_dict)
