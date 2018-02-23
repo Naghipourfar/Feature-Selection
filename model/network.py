@@ -196,6 +196,7 @@ def train(k, x_data, y_data,
     else:
         path = '../Results/Random Feature Selection/New/model_{0}_{1}'.format(k, validation_acc[-1])
     make_directory(path)
+    save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
     with open(path + '/parameters.txt') as f:
         f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
         f.write(
@@ -203,7 +204,6 @@ def train(k, x_data, y_data,
             str(n_diseases) + "\t" + str(Lambda) + "\t" +
             str(learning_rate) + "\t" + str(n_epochs) + "\t" +
             str(n_batch_learn) + "\t" + str(n_batches) + "\n")
-    save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
     print("Plots have been saved!")
 
 
