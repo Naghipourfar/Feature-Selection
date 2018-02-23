@@ -210,7 +210,7 @@ def modify_output(target):
     global N_DISEASES
     output_dict = {}
     a = target[0].value_counts()
-    print(a)
+    # print(a)
     a = pd.DataFrame(a)
     i = 0
     for row in a.itertuples():
