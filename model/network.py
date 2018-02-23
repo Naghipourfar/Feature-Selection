@@ -77,7 +77,7 @@ def plot_results(k, path, validation_result, trainig_result, result_type='Accura
     plt.close()
 
 
-def train(k,
+def train(k, x_data, y_data,
           n_samples=N_SAMPLES,
           n_features=N_FEATURES,
           n_diseases=N_DISEASES,
@@ -86,18 +86,18 @@ def train(k,
           n_epochs=N_EPOCHS,
           n_batch_learn=N_BATCH_LEARN,
           n_batches=N_BATCHES):
-    global x_train, y_train
+
     # Split data into train/test = 80%/20%
     train_indices = np.random.choice(n_samples, round(n_samples * 0.85), replace=False)
     validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
 
-    training_x = x_train.iloc[train_indices]
-    training_y = y_train.iloc[train_indices]
+    x_train = x_data.iloc[train_indices]
+    y_train = y_data.iloc[train_indices]
 
-    training_size = training_x.shape[0]
+    training_size = x_train.shape[0]
 
-    x_validation = x_train.iloc[validation_indices]
-    y_validation = y_train.iloc[validation_indices]
+    x_validation = x_data.iloc[validation_indices]
+    y_validation = y_data.iloc[validation_indices]
 
     # Create Network and Variables
     x = tf.placeholder(tf.float32, shape=[None, n_features])
@@ -162,8 +162,8 @@ def train(k,
             # Train Network
             for i in range(n_batch_learn):
                 batch_indices = np.random.choice(training_size, size=n_batches)
-                x_train_batch = training_x.iloc[batch_indices]
-                y_train_batch = training_y.iloc[batch_indices]
+                x_train_batch = x_train.iloc[batch_indices]
+                y_train_batch = y_train.iloc[batch_indices]
 
                 feed_dict = {x: x_train_batch, y: y_train_batch}
                 _, train_loss = sess.run([train_step, loss], feed_dict=feed_dict)
@@ -187,30 +187,10 @@ def train(k,
                   "\tValidation Loss =", '%09.5f' % (validation_loss[-1]),
                   "\tTraining Accuracy =", '%01.9f' % (training_acc[-1]),
                   "\tTraining Loss =", '%09.5f' % (training_loss[-1]))
-            # Training Validation set
-            # feed_dict = {x: x_validation_batch, y: y_validation_batch}
-            # sess.run(train_step, feed_dict=feed_dict)
         model_path = "/tmp/model.ckpt"
         saver.save(sess, model_path)
     print("Training Finished!")
 
-    # Test Model
-    # feed_dict = {x: x_test, y: y_test}
-    # with tf.Session() as sess:
-    #     prediction = tf.nn.softmax(final_output)
-    #     correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y_test, 1))
-    #     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-    #     sess.run(accuracy, feed_dict={x: x_test, y: y_test})
-
-    # Plot accuracy over time
-    # import matplotlib.pyplot as plt
-    # plt.plot(training_acc, 'k-', label='Training Accuracy')
-    # plt.plot(validation_acc, 'b--', label='Validation Accuracy')
-    # plt.ylim(ymax=1.0, ymin=0.0)
-    # plt.title('Accuracy per Epoch')
-    # plt.xlabel('Epoch')
-    # plt.ylabel('Accuracy')
-    # plt.legend(loc="upper right")
     if k == 19671:
         path = '../Results/All Features/New/model_{0}_{1}'.format(k, validation_acc[-1])
     else:
@@ -224,22 +204,6 @@ def train(k,
             str(learning_rate) + "\t" + str(n_epochs) + "\t" +
             str(n_batch_learn) + "\t" + str(n_batches) + "\n")
     save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
-
-    # os.makedirs(path)
-    # acc_path = path + '/accuracy.png'
-    # plt.savefig(acc_path)
-    # plt.close()
-    #
-    # # Plot loss over time
-    # plt.plot(training_loss, 'k-', label='Training Loss')
-    # plt.plot(validation_loss, 'b--', label='Validation Loss')
-    # plt.title('cross_entropy Loss per Epoch (k = {0})'.format(k))
-    # plt.xlabel('Epoch')
-    # plt.ylabel('Loss')
-    # plt.legend(loc="upper right")
-    # loss_path = path + '/loss.png'
-    # plt.savefig(loss_path)
-
     print("Plots have been saved!")
 
 
@@ -284,9 +248,6 @@ def random_train(k,
 if __name__ == '__main__':
     x_filename = "../Data/fpkm_normalized.csv"
     y_filename = "../Data/disease.csv"
-    # if not os.path.isfile(x_filename) or not os.path.isfile(y_filename):
-    #     x_filename = shrink_data("../Data/fpkm_normalized")
-    #     y_filename = shrink_data("../Data/disease")
     print("Loading data...")
     x_train, y_train = load_data(x_filename), load_data(y_filename)
     print("Data has been loaded successfully!")
@@ -296,20 +257,7 @@ if __name__ == '__main__':
     print("Training neural network!")
     from multiprocessing import Pool
 
-    N_PROCESSES = 2
+    N_PROCESSES = 3
     with Pool(N_PROCESSES) as p:  # Running 2 processes for training different networks
         p.starmap(random_train,
                   [[N_FEATURES, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in range(N_PROCESSES)])
-    # with Pool(N_PROCESSES) as p:
-    #     p.map(random_train, [28+i for i in range(N_PROCESSES)])
-    # with Pool(N_PROCESSES) as p:
-    #     p.map(random_train, [31+i for i in range(N_PROCESSES)])
-    # with Pool(2) as p:
-    #     p.map(random_train, [34+i for i in range(2)])
-
-    # for k in range(25, 35):
-    #     print("k = {0}".format(k))
-    #     random_feature_indices = np.random.choice(N_FEATURES, k)
-    #     x_train = x_train.iloc[:, random_feature_indices]
-    #     N_FEATURES = k
-    #     train(x_train, y_train, k)
