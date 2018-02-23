@@ -43,7 +43,7 @@ def load_data(filename):  # TODO search for faster way to load data
 
 
 def fully_connected(input_data, weight, bias, name=None):
-    return tf.add(tf.matmul(input_data, weight), bias, name=name)
+    return tf.nn.relu(tf.add(tf.matmul(input_data, weight), bias, name=name))
 
 
 def make_directory(path):
