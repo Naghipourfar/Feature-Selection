@@ -9,7 +9,6 @@ import os
     Created by Mohsen Naghipourfar on 2/18/18.
     Email : mn7697np@gmail.com
 """
-SHRINK_THRESHOLD = 2000
 
 # Hyper-Parameters
 LEARNING_RATE = 0.5
@@ -33,30 +32,14 @@ def bias_initializer(shape, init_value=0.1, name=None):
     return tf.Variable(initial, name=name)
 
 
-def shrink_data(filename):
-    import csv
-    new_filename = filename + "_new.csv"
-    filename += ".csv"
-    with open(filename, 'r') as csv_file:
-        raw_data = csv.reader(csv_file)  # (10787, 19671)
-        with open(new_filename, 'w') as new_file:
-            wr = csv.writer(new_file, quoting=csv.QUOTE_NONE)
-            row_number = 0
-            for row in raw_data:
-                row_number += 1
-                wr.writerow(row)
-                if row_number > SHRINK_THRESHOLD:
-                    break
-    return new_filename
-
-
-def load_data(filename):
-    import csv
-    with open(filename, 'r') as csv_file:
-        raw_data = csv.reader(csv_file)
-        training_data = list(raw_data)
-        training_data = pd.DataFrame(training_data)
-    return training_data
+def load_data(filename):  # TODO search for faster way to load data
+    # import csv
+    # with open(filename, 'r') as csv_file:  # Faster than pd.read_csv()
+    #     raw_data = csv.reader(csv_file)
+    #     training_data = list(raw_data)
+    #     training_data = pd.DataFrame(training_data)
+    # return training_data
+    return pd.read_csv(filename, header=None)
 
 
 def fully_connected(input_data, weight, bias, name=None):
@@ -314,7 +297,7 @@ if __name__ == '__main__':
     from multiprocessing import Pool
 
     N_PROCESSES = 2
-    with Pool(N_PROCESSES) as p: # Running 2 processes for training different networks
+    with Pool(N_PROCESSES) as p:  # Running 2 processes for training different networks
         p.starmap(random_train,
                   [[N_FEATURES, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in range(N_PROCESSES)])
     # with Pool(N_PROCESSES) as p:
