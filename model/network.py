@@ -196,7 +196,7 @@ def train(k, x_data, y_data,
     else:
         path = '../Results/Random Feature Selection/New/model_{0}_{1}'.format(k, validation_acc[-1])
     make_directory(path)
-    with open(path + './parameters.txt') as f:
+    with open(path + '/parameters.txt') as f:
         f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
         f.write(
             str(n_samples) + "\t" + str(n_features) + "\t" +
