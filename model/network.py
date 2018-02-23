@@ -121,9 +121,9 @@ def train(k,
     y = tf.placeholder(tf.float32, shape=[None, n_diseases])
     neurons = {
         'in': n_features,
-        'l1': 128,
-        'l2': 256,
-        'l3': 512,
+        'l1': 1024,
+        'l2': 512,
+        'l3': 256,
         'l4': 128,
         'out': n_diseases
     }
@@ -142,13 +142,13 @@ def train(k,
         'l4': bias_initializer(init_value=0.1, shape=[neurons['l4']], name='b4'),
         'out': bias_initializer(init_value=0.1, shape=[neurons['out']], name='b_out')
     }
-    # 1st Layer --> Fully Connected (256 Neurons)
+    # 1st Layer --> Fully Connected (1024 Neurons)
     layer_1 = fully_connected(x, weights['l1'], biases['l1'], name='l1')
 
-    # 2nd Layer --> Fully Connected (32 Neurons)
+    # 2nd Layer --> Fully Connected (512 Neurons)
     layer_2 = fully_connected(layer_1, weights['l2'], biases['l2'], name='l2')
 
-    # 3rd Layer --> Fully Connected (64 Neurons)
+    # 3rd Layer --> Fully Connected (256 Neurons)
     layer_3 = fully_connected(layer_2, weights['l3'], biases['l3'], name='l3')
 
     # 4th Layer --> Fully Connected (128 Neurons)
@@ -171,7 +171,6 @@ def train(k,
     validation_acc = []
     training_loss = []
     validation_loss = []
-    test_acc = []
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
@@ -199,7 +198,7 @@ def train(k,
                 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                 validation_acc.append(accuracy.eval(feed_dict))
             # if (epoch + 1) % 5 == 0 or epoch == 0:
-            print("K = {0}".format(k),
+            print("PID = {0}".format(os.getpid()),
                   "\tEpoch:", '%04d' % (epoch + 1),
                   "\tValidation Accuracy =", '%01.9f' % (validation_acc[-1]),
                   "\tValidation Loss =", '%09.5f' % (validation_loss[-1]),
@@ -315,7 +314,7 @@ if __name__ == '__main__':
     from multiprocessing import Pool
 
     N_PROCESSES = 2
-    with Pool(N_PROCESSES) as p:
+    with Pool(N_PROCESSES) as p: # Running 2 processes for training different networks
         p.starmap(random_train,
                   [[N_FEATURES, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in range(N_PROCESSES)])
     # with Pool(N_PROCESSES) as p:
@@ -325,7 +324,6 @@ if __name__ == '__main__':
     # with Pool(2) as p:
     #     p.map(random_train, [34+i for i in range(2)])
 
-    random_train(N_FEATURES)
     # for k in range(25, 35):
     #     print("k = {0}".format(k))
     #     random_feature_indices = np.random.choice(N_FEATURES, k)
