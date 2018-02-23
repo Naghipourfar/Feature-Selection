@@ -17,7 +17,7 @@ DROP_OUT = 0.5
 N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
-N_BATCHES = 750
+N_BATCHES = 1250
 N_EPOCHS = 100
 N_BATCH_LEARN = 10
 LAMBDA = 0.1
@@ -94,25 +94,27 @@ def plot_results(k, path, validation_result, trainig_result, result_type='Accura
     plt.close()
 
 
-def train(x_data, y_data, k,
+def train(k,
           n_samples=N_SAMPLES,
           n_features=N_FEATURES,
           n_diseases=N_DISEASES,
+          Lambda=LAMBDA,
           learning_rate=LEARNING_RATE,
           n_epochs=N_EPOCHS,
           n_batch_learn=N_BATCH_LEARN,
           n_batches=N_BATCHES):
+    global x_train, y_train
     # Split data into train/test = 80%/20%
     train_indices = np.random.choice(n_samples, round(n_samples * 0.85), replace=False)
     validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
 
-    x_train = x_data.iloc[train_indices]
-    y_train = y_data.iloc[train_indices]
+    training_x = x_train.iloc[train_indices]
+    training_y = y_train.iloc[train_indices]
 
-    training_size = x_train.shape[0]
+    training_size = training_x.shape[0]
 
-    x_validation = x_data.iloc[validation_indices]
-    y_validation = y_data.iloc[validation_indices]
+    x_validation = x_train.iloc[validation_indices]
+    y_validation = y_train.iloc[validation_indices]
 
     # Create Network and Variables
     x = tf.placeholder(tf.float32, shape=[None, n_features])
@@ -155,10 +157,10 @@ def train(x_data, y_data, k,
     # Final Layer --> Fully Connected (N_DISEASES Neurons)
     final_output = fully_connected(layer_4, weights['out'], biases['out'], name='l_out')
 
-    # regularizer = tf.nn.l2_loss(weights['l1']) + tf.nn.l2_loss(weights['l2']) + tf.nn.l2_loss(
-    #     weights['l3']) + tf.nn.l2_loss(weights['l4']) + tf.nn.l2_loss(weights['out'])
+    regularizer = tf.nn.l2_loss(weights['l1']) + tf.nn.l2_loss(weights['l2']) + tf.nn.l2_loss(
+        weights['l3']) + tf.nn.l2_loss(weights['l4']) + tf.nn.l2_loss(weights['out'])
     loss = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits_v2(logits=final_output, labels=y),
+        Lambda * regularizer + tf.nn.softmax_cross_entropy_with_logits_v2(logits=final_output, labels=y),
         name='loss')
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, name='optimizer')
     train_step = optimizer.minimize(loss, name='train_step')
@@ -178,8 +180,8 @@ def train(x_data, y_data, k,
             # Train Network
             for i in range(n_batch_learn):
                 batch_indices = np.random.choice(training_size, size=n_batches)
-                x_train_batch = x_train.iloc[batch_indices]
-                y_train_batch = y_train.iloc[batch_indices]
+                x_train_batch = training_x.iloc[batch_indices]
+                y_train_batch = training_y.iloc[batch_indices]
 
                 feed_dict = {x: x_train_batch, y: y_train_batch}
                 _, train_loss = sess.run([train_step, loss], feed_dict=feed_dict)
@@ -197,11 +199,12 @@ def train(x_data, y_data, k,
                 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                 validation_acc.append(accuracy.eval(feed_dict))
             # if (epoch + 1) % 5 == 0 or epoch == 0:
-            print("Epoch:", '%04d' % (epoch + 1),
-                  "\tValidation Accuracy={0}".format(validation_acc[-1]),
-                  "\tValidation Loss={:9.9f}".format(validation_loss[-1]),
-                  "\tTraining Accuracy={0}".format(training_acc[-1]),
-                  "\tTraining Loss={:9.9f}".format(training_loss[-1]))
+            print("K = {0}".format(k),
+                  "\tEpoch:", '%04d' % (epoch + 1),
+                  "\tValidation Accuracy =", '%01.9f' % (validation_acc[-1]),
+                  "\tValidation Loss =", '%09.5f' % (validation_loss[-1]),
+                  "\tTraining Accuracy =", '%01.9f' % (training_acc[-1]),
+                  "\tTraining Loss =", '%09.5f' % (training_loss[-1]))
             # Training Validation set
             # feed_dict = {x: x_validation_batch, y: y_validation_batch}
             # sess.run(train_step, feed_dict=feed_dict)
@@ -231,6 +234,13 @@ def train(x_data, y_data, k,
     else:
         path = '../Results/Random Feature Selection/New/model_{0}_{1}'.format(k, validation_acc[-1])
     make_directory(path)
+    with open(path + './parameters.txt') as f:
+        f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
+        f.write(
+            str(n_samples) + "\t" + str(n_features) + "\t" +
+            str(n_diseases) + "\t" + str(Lambda) + "\t" +
+            str(learning_rate) + "\t" + str(n_epochs) + "\t" +
+            str(n_batch_learn) + "\t" + str(n_batches) + "\n")
     save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
 
     # os.makedirs(path)
@@ -268,24 +278,30 @@ def modify_output(target):
     return new_output
 
 
-def random_train(k):
+def random_train(k,
+                 Lambda=LAMBDA,
+                 learning_rate=LEARNING_RATE,
+                 n_batch_learn=N_BATCH_LEARN,
+                 n_batches=N_BATCHES):
     global N_FEATURES, x_train, y_train
     print("k = {0}".format(k))
-    random_feature_indices = np.random.choice(N_FEATURES, k)
-    x_train = x_train.iloc[:, random_feature_indices]
+    if k < 19671:
+        random_feature_indices = np.random.choice(N_FEATURES, k)
+        x_train = x_train.iloc[:, random_feature_indices]
     N_FEATURES = k
-    train(x_train, y_train, k,
+    train(k,
           n_samples=N_SAMPLES,
           n_features=N_FEATURES,
           n_diseases=N_DISEASES,
-          learning_rate=LEARNING_RATE,
-          n_batch_learn=N_BATCH_LEARN,
-          n_batches=N_BATCHES)
+          Lambda=Lambda,
+          learning_rate=learning_rate,
+          n_batch_learn=n_batch_learn,
+          n_batches=n_batches)
 
 
 if __name__ == '__main__':
-    x_filename = "../Data/fpkm_normalized_new.csv"
-    y_filename = "../Data/disease_new.csv"
+    x_filename = "../Data/fpkm_normalized.csv"
+    y_filename = "../Data/disease.csv"
     # if not os.path.isfile(x_filename) or not os.path.isfile(y_filename):
     #     x_filename = shrink_data("../Data/fpkm_normalized")
     #     y_filename = shrink_data("../Data/disease")
@@ -298,9 +314,10 @@ if __name__ == '__main__':
     print("Training neural network!")
     from multiprocessing import Pool
 
-    N_PROCESSES = 3
+    N_PROCESSES = 2
     with Pool(N_PROCESSES) as p:
-        p.map(random_train, [N_FEATURES for i in range(N_PROCESSES)])
+        p.starmap(random_train,
+                  [[N_FEATURES, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in range(N_PROCESSES)])
     # with Pool(N_PROCESSES) as p:
     #     p.map(random_train, [28+i for i in range(N_PROCESSES)])
     # with Pool(N_PROCESSES) as p:
