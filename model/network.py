@@ -101,7 +101,7 @@ def train(k, x_data, y_data,
     # Create Network and Variables
     x = tf.placeholder(tf.float32, shape=[None, n_features])
     y = tf.placeholder(tf.float32, shape=[None, n_diseases])
-    neurons = {
+    neurons = {  # TODO train This new architecture
         'in': n_features,
         'l1': 1024,
         'l2': 512,
