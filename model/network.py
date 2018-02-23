@@ -94,15 +94,24 @@ def plot_results(k, path, validation_result, trainig_result, result_type='Accura
     plt.close()
 
 
-def train(x_data, y_data, k):
+def train(x_data, y_data, k,
+          n_samples=N_SAMPLES,
+          n_features=N_FEATURES,
+          n_diseases=N_DISEASES,
+          learning_rate=LEARNING_RATE,
+          n_epochs=N_EPOCHS,
+          n_batch_learn=N_BATCH_LEARN,
+          n_batches=N_BATCHES):
+
     # Split data into train/test = 80%/20%
+    print(n_samples, n_features, n_diseases, learning_rate, n_epochs, n_batch_learn, n_batches)
     train_indices = np.random.choice(N_SAMPLES, round(N_SAMPLES * 0.85), replace=False)
     validation_indices = np.array(list(set(range(N_SAMPLES)) - set(train_indices)))
 
     x_train = x_data.iloc[train_indices]
     y_train = y_data.iloc[train_indices]
 
-    N_TRAIN_DATA = x_train.shape[0]
+    training_size = x_train.shape[0]
 
     x_validation = x_data.iloc[validation_indices]
     y_validation = y_data.iloc[validation_indices]
@@ -170,7 +179,7 @@ def train(x_data, y_data, k):
         for epoch in range(N_EPOCHS):
             # Train Network
             for i in range(N_BATCH_LEARN):
-                batch_indices = np.random.choice(N_TRAIN_DATA, size=N_BATCHES)
+                batch_indices = np.random.choice(training_size, size=N_BATCHES)
                 x_train_batch = x_train.iloc[batch_indices]
                 y_train_batch = y_train.iloc[batch_indices]
 
@@ -264,12 +273,18 @@ def random_train(k):
     random_feature_indices = np.random.choice(N_FEATURES, k)
     x_train = x_train.iloc[:, random_feature_indices]
     N_FEATURES = k
-    train(x_train, y_train, k)
+    train(x_train, y_train, k,
+          n_samples=N_SAMPLES,
+          n_features=N_FEATURES,
+          n_diseases=N_DISEASES,
+          learning_rate=LEARNING_RATE,
+          n_batch_learn=N_BATCH_LEARN,
+          n_batches=N_BATCHES)
 
 
 if __name__ == '__main__':
-    x_filename = "../Data/fpkm_normalized.csv"
-    y_filename = "../Data/disease.csv"
+    x_filename = "../Data/fpkm_normalized_new.csv"
+    y_filename = "../Data/disease_new.csv"
     # if not os.path.isfile(x_filename) or not os.path.isfile(y_filename):
     #     x_filename = shrink_data("../Data/fpkm_normalized")
     #     y_filename = shrink_data("../Data/disease")
