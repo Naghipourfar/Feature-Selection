@@ -245,8 +245,8 @@ def random_train(k, x_train, y_train,
 
 
 if __name__ == '__main__':
-    x_filename = "../Data/fpkm_normalized_new.csv"
-    y_filename = "../Data/disease_new.csv"
+    x_filename = "../Data/fpkm_normalized.csv"
+    y_filename = "../Data/disease.csv"
     print("Loading data...")
     x_train, y_train = load_data(x_filename), load_data(y_filename)
     print("Data has been loaded successfully!")
