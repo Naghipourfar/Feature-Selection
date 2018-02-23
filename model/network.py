@@ -63,6 +63,37 @@ def fully_connected(input_data, weight, bias, name=None):
     return tf.add(tf.matmul(input_data, weight), bias, name=name)
 
 
+def make_directory(path):
+    os.makedirs(path)
+
+
+def save_model_results(k, path, validation_accuracy, validation_loss, training_accuracy, training_loss):
+    plot_results(k, path, validation_accuracy, training_accuracy, result_type='Accuracy')
+    plot_results(k, path, validation_loss, training_loss, result_type='Loss')
+    write_result_data(path, validation_accuracy, validation_loss, training_accuracy, training_loss)
+
+
+def write_result_data(path, validation_accuracy, validation_loss, training_accuracy, training_loss):
+    with open(path + '/results.txt', 'w') as f:
+        f.write("Validation Accuracy\tValidation Loss\tTraining Accuracy\tTraining Loss\n")
+        for v_acc, v_loss, t_acc, t_loss in zip(validation_accuracy, validation_loss, training_accuracy, training_loss):
+            f.write(str(v_acc) + "\t" + str(v_loss) + "\t" + str(t_acc) + "\t" + str(t_loss) + "\n")
+
+
+def plot_results(k, path, validation_result, trainig_result, result_type='Accuracy'):
+    plt.plot(trainig_result, 'k-', label='Training ' + result_type)
+    plt.plot(validation_result, 'b--', label='Validation ' + result_type)
+    if result_type == 'Accuracy':
+        plt.ylim(ymax=1.0, ymin=0.0)
+    plt.title('Accuracy per Epoch (k = {0})'.format(k))
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(loc="upper right")
+    result_path = path + '/' + result_type + '.png'
+    plt.savefig(result_path)
+    plt.close()
+
+
 def train(x_data, y_data, k):
     # Split data into train/test = 80%/20%
     train_indices = np.random.choice(N_SAMPLES, round(N_SAMPLES * 0.85), replace=False)
@@ -120,9 +151,9 @@ def train(x_data, y_data, k):
     # regularizer = tf.nn.l2_loss(weights['l1']) + tf.nn.l2_loss(weights['l2']) + tf.nn.l2_loss(
     #     weights['l3']) + tf.nn.l2_loss(weights['l4']) + tf.nn.l2_loss(weights['out'])
     loss = tf.reduce_mean(
-        tf.nn.sigmoid_cross_entropy_with_logits(logits=final_output, labels=y),
+        tf.nn.softmax_cross_entropy_with_logits_v2(logits=final_output, labels=y),
         name='loss')
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=LEARNING_RATE, name='optimizer')
+    optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, name='optimizer')
     train_step = optimizer.minimize(loss, name='train_step')
 
     init = tf.global_variables_initializer()
@@ -158,9 +189,9 @@ def train(x_data, y_data, k):
                 correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y_validation, 1))
                 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                 validation_acc.append(accuracy.eval(feed_dict))
-            if (epoch + 1) % 5 == 0 or epoch == 0:
-                print("Epoch:", '%04d' % (epoch + 1), "\tValidation Accuracy={:.9f}".format(validation_acc[-1]),
-                      "\tValidation Loss={:5.9f}".format(validation_loss[-1]))
+            # if (epoch + 1) % 5 == 0 or epoch == 0:
+            print("Epoch:", '%04d' % (epoch + 1), "\tValidation Accuracy={0}".format(validation_acc[-1]),
+                  "\tValidation Loss={:5.9f}".format(validation_loss[-1]))
             # Training Validation set
             # feed_dict = {x: x_validation_batch, y: y_validation_batch}
             # sess.run(train_step, feed_dict=feed_dict)
@@ -177,26 +208,35 @@ def train(x_data, y_data, k):
     #     sess.run(accuracy, feed_dict={x: x_test, y: y_test})
 
     # Plot accuracy over time
-    import matplotlib.pyplot as plt
-    plt.plot(training_acc, 'k-', label='Training Accuracy')
-    plt.plot(validation_acc, 'b--', label='Validation Accuracy')
-    plt.ylim(ymax=1.0, ymin=0.0)
-    plt.title('Accuracy per Epoch')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.legend(loc="upper right")
-    os.makedirs('./model_{0}_{1}'.format(k, validation_acc[-1]))
-    plt.savefig('./model_{0}_{1}/accuracy.png'.format(k, validation_acc[-1]))
-    plt.close()
+    # import matplotlib.pyplot as plt
+    # plt.plot(training_acc, 'k-', label='Training Accuracy')
+    # plt.plot(validation_acc, 'b--', label='Validation Accuracy')
+    # plt.ylim(ymax=1.0, ymin=0.0)
+    # plt.title('Accuracy per Epoch')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Accuracy')
+    # plt.legend(loc="upper right")
+    if k == 19671:
+        path = '../Results/All Features/New/model_{0}_{1}'.format(k, validation_acc[-1])
+    else:
+        path = '../Results/Random Feature Selection/New/model_{0}_{1}'.format(k, validation_acc[-1])
+    make_directory(path)
+    save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
 
-    # Plot loss over time
-    plt.plot(training_loss, 'k-', label='Training Loss')
-    plt.plot(validation_loss, 'b--', label='Validation Loss')
-    plt.title('cross_entropy Loss per Epoch (k = {0})'.format(k))
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend(loc="upper right")
-    plt.savefig('./model_{0}_{1}/loss.png'.format(k, validation_acc[-1]))
+    # os.makedirs(path)
+    # acc_path = path + '/accuracy.png'
+    # plt.savefig(acc_path)
+    # plt.close()
+    #
+    # # Plot loss over time
+    # plt.plot(training_loss, 'k-', label='Training Loss')
+    # plt.plot(validation_loss, 'b--', label='Validation Loss')
+    # plt.title('cross_entropy Loss per Epoch (k = {0})'.format(k))
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Loss')
+    # plt.legend(loc="upper right")
+    # loss_path = path + '/loss.png'
+    # plt.savefig(loss_path)
 
     print("Plots have been saved!")
 
@@ -242,9 +282,9 @@ if __name__ == '__main__':
     print("Training neural network!")
     from multiprocessing import Pool
 
-    # N_PROCESSES = 3
-    # with Pool(N_PROCESSES) as p:
-    #     p.map(random_train, [25+i for i in range(N_PROCESSES)])
+    N_PROCESSES = 3
+    with Pool(N_PROCESSES) as p:
+        p.map(random_train, [N_FEATURES for i in range(N_PROCESSES)])
     # with Pool(N_PROCESSES) as p:
     #     p.map(random_train, [28+i for i in range(N_PROCESSES)])
     # with Pool(N_PROCESSES) as p:
