@@ -258,7 +258,7 @@ if __name__ == '__main__':
     from multiprocessing import Pool
 
     N_PROCESSES = 1
-    with Pool(N_PROCESSES) as p:  # Running 2 processes for training different networks
+    with Pool(N_PROCESSES) as p:  # Running multiple processes for training different networks (use cores of CPU)
         p.starmap(random_train,
                   [[N_FEATURES, x_train, y_train, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in
                    range(N_PROCESSES)])
