@@ -102,11 +102,9 @@ def train(x_data, y_data, k,
           n_epochs=N_EPOCHS,
           n_batch_learn=N_BATCH_LEARN,
           n_batches=N_BATCHES):
-
     # Split data into train/test = 80%/20%
-    print(n_samples, n_features, n_diseases, learning_rate, n_epochs, n_batch_learn, n_batches)
-    train_indices = np.random.choice(N_SAMPLES, round(N_SAMPLES * 0.85), replace=False)
-    validation_indices = np.array(list(set(range(N_SAMPLES)) - set(train_indices)))
+    train_indices = np.random.choice(n_samples, round(n_samples * 0.85), replace=False)
+    validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
 
     x_train = x_data.iloc[train_indices]
     y_train = y_data.iloc[train_indices]
@@ -117,15 +115,15 @@ def train(x_data, y_data, k,
     y_validation = y_data.iloc[validation_indices]
 
     # Create Network and Variables
-    x = tf.placeholder(tf.float32, shape=[None, N_FEATURES])
-    y = tf.placeholder(tf.float32, shape=[None, N_DISEASES])
+    x = tf.placeholder(tf.float32, shape=[None, n_features])
+    y = tf.placeholder(tf.float32, shape=[None, n_diseases])
     neurons = {
-        'in': N_FEATURES,
+        'in': n_features,
         'l1': 128,
         'l2': 256,
         'l3': 512,
         'l4': 128,
-        'out': N_DISEASES
+        'out': n_diseases
     }
     weights = {
         'l1': weight_initializer(shape=[neurons['in'], neurons['l1']], stddev=0.1, name='w1'),
@@ -162,7 +160,7 @@ def train(x_data, y_data, k,
     loss = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits_v2(logits=final_output, labels=y),
         name='loss')
-    optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, name='optimizer')
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, name='optimizer')
     train_step = optimizer.minimize(loss, name='train_step')
 
     init = tf.global_variables_initializer()
@@ -176,10 +174,10 @@ def train(x_data, y_data, k,
     saver = tf.train.Saver()
     with tf.Session() as sess:
         sess.run(init)
-        for epoch in range(N_EPOCHS):
+        for epoch in range(n_epochs):
             # Train Network
-            for i in range(N_BATCH_LEARN):
-                batch_indices = np.random.choice(training_size, size=N_BATCHES)
+            for i in range(n_batch_learn):
+                batch_indices = np.random.choice(training_size, size=n_batches)
                 x_train_batch = x_train.iloc[batch_indices]
                 y_train_batch = y_train.iloc[batch_indices]
 
@@ -199,8 +197,11 @@ def train(x_data, y_data, k,
                 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                 validation_acc.append(accuracy.eval(feed_dict))
             # if (epoch + 1) % 5 == 0 or epoch == 0:
-            print("Epoch:", '%04d' % (epoch + 1), "\tValidation Accuracy={0}".format(validation_acc[-1]),
-                  "\tValidation Loss={:5.9f}".format(validation_loss[-1]))
+            print("Epoch:", '%04d' % (epoch + 1),
+                  "\tValidation Accuracy={0}".format(validation_acc[-1]),
+                  "\tValidation Loss={:9.9f}".format(validation_loss[-1]),
+                  "\tTraining Accuracy={0}".format(training_acc[-1]),
+                  "\tTraining Loss={:9.9f}".format(training_loss[-1]))
             # Training Validation set
             # feed_dict = {x: x_validation_batch, y: y_validation_batch}
             # sess.run(train_step, feed_dict=feed_dict)
