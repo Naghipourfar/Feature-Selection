@@ -86,9 +86,8 @@ def train(k, x_data, y_data,
           n_epochs=N_EPOCHS,
           n_batch_learn=N_BATCH_LEARN,
           n_batches=N_BATCHES):
-
     # Split data into train/test = 80%/20%
-    train_indices = np.random.choice(n_samples, round(n_samples * 0.85), replace=False)
+    train_indices = np.random.choice(n_samples, round(n_samples * 0.85), replace=False, p=None)
     validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
 
     x_train = x_data.iloc[train_indices]
@@ -224,18 +223,18 @@ def modify_output(target):
     return new_output
 
 
-def random_train(k,
+def random_train(k, x_train, y_train,
                  Lambda=LAMBDA,
                  learning_rate=LEARNING_RATE,
                  n_batch_learn=N_BATCH_LEARN,
                  n_batches=N_BATCHES):
-    global N_FEATURES, x_train, y_train
+    global N_FEATURES
     print("k = {0}".format(k))
     if k < 19671:
         random_feature_indices = np.random.choice(N_FEATURES, k)
         x_train = x_train.iloc[:, random_feature_indices]
     N_FEATURES = k
-    train(k,
+    train(k, x_train, y_train,
           n_samples=N_SAMPLES,
           n_features=N_FEATURES,
           n_diseases=N_DISEASES,
@@ -246,8 +245,8 @@ def random_train(k,
 
 
 if __name__ == '__main__':
-    x_filename = "../Data/fpkm_normalized.csv"
-    y_filename = "../Data/disease.csv"
+    x_filename = "../Data/fpkm_normalized_new.csv"
+    y_filename = "../Data/disease_new.csv"
     print("Loading data...")
     x_train, y_train = load_data(x_filename), load_data(y_filename)
     print("Data has been loaded successfully!")
@@ -257,7 +256,8 @@ if __name__ == '__main__':
     print("Training neural network!")
     from multiprocessing import Pool
 
-    N_PROCESSES = 3
+    N_PROCESSES = 1
     with Pool(N_PROCESSES) as p:  # Running 2 processes for training different networks
         p.starmap(random_train,
-                  [[N_FEATURES, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in range(N_PROCESSES)])
+                  [[N_FEATURES, x_train, y_train, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in
+                   range(N_PROCESSES)])
