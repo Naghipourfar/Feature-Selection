@@ -87,7 +87,8 @@ def train(k, x_data, y_data,
           n_batch_learn=N_BATCH_LEARN,
           n_batches=N_BATCHES):
     # Split data into train/test = 80%/20%
-    train_indices = np.random.choice(n_samples, round(n_samples * 0.85), replace=False, p=None)
+    train_indices = np.random.choice(n_samples, round(n_samples * 0.85), replace=False,
+                                     p=None)  # TODO Check train_test_split in sklearn.model_selection
     validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
 
     x_train = x_data.iloc[train_indices]
