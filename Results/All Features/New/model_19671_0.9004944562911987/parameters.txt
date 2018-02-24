@@ -1,0 +1,2 @@
+n_samples	n_features	n_diseases	Lambda	learning_rate	n_epochs	n_batch_learn	n_batches
+10787	19671	34	0.1	0.5	100	10	2500

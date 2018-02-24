@@ -16,7 +16,7 @@ DROP_OUT = 0.5
 N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
-N_BATCHES = 1250
+N_BATCHES = 2000
 N_EPOCHS = 100
 N_BATCH_LEARN = 10
 LAMBDA = 0.1
@@ -71,7 +71,10 @@ def plot_results(k, path, validation_result, trainig_result, result_type='Accura
     plt.title('Accuracy per Epoch (k = {0})'.format(k))
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.legend(loc="upper right")
+    if result_type == 'Accuracy':
+        plt.legend(loc="lower right")
+    else:
+        plt.legend(loc="upper right")
     result_path = path + '/' + result_type + '.png'
     plt.savefig(result_path)
     plt.close()
@@ -197,7 +200,7 @@ def train(k, x_data, y_data,
         path = '../Results/Random Feature Selection/New/model_{0}_{1}'.format(k, validation_acc[-1])
     make_directory(path)
     save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
-    with open(path + '/parameters.txt') as f:
+    with open(path + '/parameters.txt', 'w') as f:
         f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
         f.write(
             str(n_samples) + "\t" + str(n_features) + "\t" +
