@@ -7,6 +7,7 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import os
 from sklearn.preprocessing import normalize
+from sklearn.model_selection import train_test_split
 import matplotlib
 
 matplotlib.use('agg')
@@ -23,15 +24,14 @@ LOCAL_LOCATION_Y = "../Data/disease.csv"
 LOCAL_LOCATION_SAVE = "../Results/All_Features/"
 
 # Hyper-Parameters
-LEARNING_RATE = 1.0
+LEARNING_RATE = 1e-3
 DROP_OUT = 0.5
 N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 2000
-N_EPOCHS = 100
+N_EPOCHS = 250
 N_BATCH_LEARN = 10
-LAMBDA = 0.5
 
 
 def normalize_data(data):
@@ -49,17 +49,11 @@ def bias_initializer(shape, init_value=0.1, name=None):
 
 
 def load_data(filename):  # TODO search for faster way to load data
-    # import csv
-    # with open(filename, 'r') as csv_file:  # Faster than pd.read_csv()
-    #     raw_data = csv.reader(csv_file)
-    #     training_data = list(raw_data)
-    #     training_data = pd.DataFrame(training_data)
-    # return training_data
     return pd.read_csv(filename, header=None)
 
 
 def fully_connected(input_data, weight, bias, name=None):
-    return tf.add(tf.matmul(input_data, weight), bias, name=name)
+    return tf.nn.relu(tf.add(tf.matmul(input_data, weight), bias, name=name))
 
 
 def drop_out(prev_output, keep_prob):
@@ -105,24 +99,24 @@ def train(k, x_data, y_data,
           n_samples=N_SAMPLES,
           n_features=N_FEATURES,
           n_diseases=N_DISEASES,
-          Lambda=LAMBDA,
           learning_rate=LEARNING_RATE,
           n_epochs=N_EPOCHS,
           n_batch_learn=N_BATCH_LEARN,
           n_batches=N_BATCHES):
     global LOCAL_LOCATION_SAVE, DAMAVAND_LOCATION_SAVE
     # Split data into train/test = 80%/20%
-    train_indices = np.random.choice(n_samples, round(n_samples * 0.85),
-                                     replace=False)  # TODO Check train_test_split in sklearn.model_selection
-    validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
+    X_train, X_test, Y_train, Y_test = train_test_split(x_data, y_data, test_size=0.20)
+    # train_indices = np.random.choice(n_samples, round(n_samples * 0.85),
+    #                                  replace=False)
+    # validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
+    #
+    # x_train = x_data.iloc[train_indices]
+    # y_train = y_data.iloc[train_indices]
 
-    x_train = x_data.iloc[train_indices]
-    y_train = y_data.iloc[train_indices]
+    training_size = X_train.shape[0]
 
-    training_size = x_train.shape[0]
-
-    x_validation = x_data.iloc[validation_indices]
-    y_validation = y_data.iloc[validation_indices]
+    # x_validation = x_data.iloc[validation_indices]
+    # y_validation = y_data.iloc[validation_indices]
 
     # Create Network and Variables
     with tf.Graph().as_default():
@@ -132,24 +126,24 @@ def train(k, x_data, y_data,
         neurons = {  # TODO train This new architecture
             'in': n_features,
             'l1': 1024,
-            'l2': 512,
-            'l3': 256,
-            'l4': 128,
+            'l2': 256,  # 256
+            'l3': 64,  # 64
+            # 'l4': 128,  # None
             'out': n_diseases
         }
         weights = {
             'l1': weight_initializer(shape=[neurons['in'], neurons['l1']], stddev=0.1, name='w1'),
             'l2': weight_initializer(shape=[neurons['l1'], neurons['l2']], stddev=0.1, name='w2'),
             'l3': weight_initializer(shape=[neurons['l2'], neurons['l3']], stddev=0.1, name='w3'),
-            'l4': weight_initializer(shape=[neurons['l3'], neurons['l4']], stddev=0.1, name='w4'),
-            'out': weight_initializer(shape=[neurons['l4'], neurons['out']], stddev=0.1, name='w_out')
+            # 'l4': weight_initializer(shape=[neurons['l3'], neurons['l4']], stddev=0.1, name='w4'),
+            'out': weight_initializer(shape=[neurons['l3'], neurons['out']], stddev=0.1, name='w_out')
         }
 
         biases = {
             'l1': bias_initializer(init_value=0.1, shape=[neurons['l1']], name='b1'),
             'l2': bias_initializer(init_value=0.1, shape=[neurons['l2']], name='b2'),
             'l3': bias_initializer(init_value=0.1, shape=[neurons['l3']], name='b3'),
-            'l4': bias_initializer(init_value=0.1, shape=[neurons['l4']], name='b4'),
+            # 'l4': bias_initializer(init_value=0.1, shape=[neurons['l4']], name='b4'),
             'out': bias_initializer(init_value=0.1, shape=[neurons['out']], name='b_out')
         }
         # 1st Layer --> Fully Connected (1024 Neurons)
@@ -165,18 +159,16 @@ def train(k, x_data, y_data,
         layer_3 = drop_out(layer_3, keep_prob)
 
         # 4th Layer --> Fully Connected (128 Neurons)
-        layer_4 = fully_connected(layer_3, weights['l4'], biases['l4'], name='l4')
-        layer_4 = drop_out(layer_4, keep_prob)
+        # layer_4 = fully_connected(layer_3, weights['l4'], biases['l4'], name='l4')
+        # layer_4 = drop_out(layer_4, keep_prob)
 
         # Final Layer --> Fully Connected (N_DISEASES Neurons)
-        final_output = fully_connected(layer_4, weights['out'], biases['out'], name='l_out')
+        final_output = fully_connected(layer_3, weights['out'], biases['out'], name='l_out')
 
-        regularizer = tf.nn.l2_loss(weights['l1']) + tf.nn.l2_loss(weights['l2']) + tf.nn.l2_loss(
-            weights['l3']) + tf.nn.l2_loss(weights['l4']) + tf.nn.l2_loss(weights['out'])
         loss = tf.reduce_mean(
-            Lambda * regularizer + tf.nn.softmax_cross_entropy_with_logits(logits=final_output, labels=y),
+            tf.nn.softmax_cross_entropy_with_logits(logits=final_output, labels=y),
             name='loss')
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, name='optimizer')
+        optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, name='optimizer')
         train_step = optimizer.minimize(loss, name='train_step')
 
         init = tf.global_variables_initializer()
@@ -188,19 +180,24 @@ def train(k, x_data, y_data,
 
         saver = tf.train.Saver()
         additional_path = 'model_{0}'.format(k)
-        path = DAMAVAND_LOCATION_SAVE + additional_path
+        path = LOCAL_LOCATION_SAVE + additional_path
         make_directory(path)
+        with open(path + '/parameters.txt', 'w') as f:
+            f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
+            f.write(
+                str(n_samples) + "\t" + str(n_features) + "\t" +
+                str(learning_rate) + "\t" + str(n_epochs) + "\t" +
+                str(n_batch_learn) + "\t" + str(n_batches) + "\n")
         log_filename = path + '/log.txt'
         log_file = open(log_filename, 'w')
         with tf.Session() as sess:
-
             sess.run(init)
             for epoch in range(n_epochs):
                 # Train Network
                 for i in range(n_batch_learn):
                     batch_indices = np.random.choice(training_size, size=n_batches)
-                    x_train_batch = x_train.iloc[batch_indices]
-                    y_train_batch = y_train.iloc[batch_indices]
+                    x_train_batch = X_train.iloc[batch_indices]
+                    y_train_batch = Y_train.iloc[batch_indices]
 
                     feed_dict = {x: x_train_batch, y: y_train_batch, keep_prob: DROP_OUT}
                     _, train_loss = sess.run([train_step, loss], feed_dict=feed_dict)
@@ -212,10 +209,10 @@ def train(k, x_data, y_data,
                     training_acc.append(accuracy.eval(feed_dict))
 
                     # Test Validation set
-                    feed_dict = {x: x_validation, y: y_validation, keep_prob: 1.0}
+                    feed_dict = {x: X_test, y: Y_test, keep_prob: 1.0}
                     validation_loss.append(sess.run(loss, feed_dict=feed_dict))
                     prediction = tf.nn.softmax(final_output)
-                    correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y_validation, 1))
+                    correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y_test, 1))
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                     validation_acc.append(accuracy.eval(feed_dict))
                 message = "Epoch:" + '%04d' % (epoch + 1) \
@@ -239,14 +236,11 @@ def train(k, x_data, y_data,
         path = new_path
 
         save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
-        with open(path + '/parameters.txt', 'w') as f:
-            f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
-            f.write(
-                str(n_samples) + "\t" + str(n_features) + "\t" +
-                str(n_diseases) + "\t" + str(Lambda) + "\t" +
-                str(learning_rate) + "\t" + str(n_epochs) + "\t" +
-                str(n_batch_learn) + "\t" + str(n_batches) + "\n")
         print("Plots have been saved!")
+        import csv
+        with open('./result.csv', 'a') as file:
+            writer = csv.writer(file)
+            writer.writerow([validation_acc[-1], validation_loss[-1]])
 
 
 def modify_output(target):
@@ -267,29 +261,40 @@ def modify_output(target):
 
 
 def random_train(k, x_train, y_train,
-                 Lambda=LAMBDA,
                  learning_rate=LEARNING_RATE,
                  n_batch_learn=N_BATCH_LEARN,
                  n_batches=N_BATCHES):
-    global N_FEATURES
     print("k = {0}".format(k))
+    global N_FEATURES
+    new_X = []
     if k < 19671:
-        random_feature_indices = np.random.choice(N_FEATURES, k)
-        x_train = x_train.iloc[:, random_feature_indices]
-    N_FEATURES = k
-    train(k, x_train, y_train,
+        random_feature_indices = np.random.choice(N_FEATURES, k, replace=False)
+        # print(random_feature_indices)
+        new_X = x_train[random_feature_indices]
+        print(new_X.shape)
+        N_FEATURES = new_X.shape[1]
+    train(k, new_X, y_train,
           n_samples=N_SAMPLES,
           n_features=N_FEATURES,
           n_diseases=N_DISEASES,
-          Lambda=Lambda,
           learning_rate=learning_rate,
           n_batch_learn=n_batch_learn,
           n_batches=n_batches)
 
 
+def random_choice(n, features):
+    random_arr = [1 for _ in range(n)] + [0 for _ in range(N_FEATURES - n)]
+    np.random.shuffle(random_arr)
+    a = features.copy()
+    for i in range(N_FEATURES):
+        if random_arr[i] == 0:
+            a[i] = 0
+    return a
+
+
 if __name__ == '__main__':
-    x_filename = DAMAVAND_LOCATION_X
-    y_filename = DAMAVAND_LOCATION_Y
+    x_filename = LOCAL_LOCATION_X
+    y_filename = LOCAL_LOCATION_Y
     print("Loading data...")
     x_train, y_train = load_data(x_filename), load_data(y_filename)
     print("Normalizing Data")
@@ -306,11 +311,12 @@ if __name__ == '__main__':
     #     p.starmap(random_train,
     #               [[N_FEATURES, x_train, y_train, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in
     #                range(N_PROCESSES)])
-
-    random_train(N_FEATURES, x_train, y_train, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES)
-    random_train(N_FEATURES, x_train, y_train, LAMBDA, 1.0, N_BATCH_LEARN, N_BATCHES)
-    random_train(N_FEATURES, x_train, y_train, 0.5, 1.0, N_BATCH_LEARN, N_BATCHES)
-    random_train(N_FEATURES, x_train, y_train, 0.5, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES)
-    random_train(N_FEATURES, x_train, y_train, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, 1500)
+    for i in range(1000):
+        random_train(50, x_train, y_train)
+    # random_train(N_FEATURES, x_train, y_train, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES)
+    # random_train(N_FEATURES, x_train, y_train, 1.0, N_BATCH_LEARN, N_BATCHES)
+    # random_train(N_FEATURES, x_train, y_train, 1.0, N_BATCH_LEARN, N_BATCHES)
+    # random_train(N_FEATURES, x_train, y_train, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES)
+    # random_train(N_FEATURES, x_train, y_train, LEARNING_RATE, N_BATCH_LEARN, 1500)
     # for k in range(25, 35):
     #     random_train(k, x_train, y_train, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES)
