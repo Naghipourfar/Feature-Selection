@@ -16,9 +16,9 @@ matplotlib.use('agg')
     Email : mn7697np@gmail.com
 """
 # Constants
-DAMAVAND_LOCATION_X = "~/d/Behrooz/dataset_local/fpkm.csv"
-DAMAVAND_LOCATION_Y = "~/d/Behrooz/dataset_local/disease.csv"
-DAMAVAND_LOCATION_SAVE = "./Results/All_Features/"
+DAMAVAND_LOCATION_X = "~/f/Behrooz/dataset_local/fpkm_normalized.csv"
+DAMAVAND_LOCATION_Y = "~/f/Behrooz/dataset_local/disease.csv"
+DAMAVAND_LOCATION_SAVE = "./Results/Random_Features/"
 LOCAL_LOCATION_X = "../Data/fpkm_normalized.csv"
 LOCAL_LOCATION_Y = "../Data/disease.csv"
 LOCAL_LOCATION_SAVE = "../Results/All_Features/"
@@ -30,7 +30,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 2000
-N_EPOCHS = 250
+N_EPOCHS = 100
 N_BATCH_LEARN = 10
 
 
@@ -104,8 +104,10 @@ def train(k, x_data, y_data,
           n_batch_learn=N_BATCH_LEARN,
           n_batches=N_BATCHES):
     global LOCAL_LOCATION_SAVE, DAMAVAND_LOCATION_SAVE
+    tf.reset_default_graph()
     # Split data into train/test = 80%/20%
     X_train, X_test, Y_train, Y_test = train_test_split(x_data, y_data, test_size=0.20)
+    print(X_train.shape)
     # train_indices = np.random.choice(n_samples, round(n_samples * 0.85),
     #                                  replace=False)
     # validation_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
@@ -126,16 +128,14 @@ def train(k, x_data, y_data,
         neurons = {  # TODO train This new architecture
             'in': n_features,
             'l1': 1024,
-            'l2': 256,  # 256
-            'l3': 64,  # 64
-            # 'l4': 128,  # None
+            'l2': 256,
+            'l3': 64,
             'out': n_diseases
         }
         weights = {
             'l1': weight_initializer(shape=[neurons['in'], neurons['l1']], stddev=0.1, name='w1'),
             'l2': weight_initializer(shape=[neurons['l1'], neurons['l2']], stddev=0.1, name='w2'),
             'l3': weight_initializer(shape=[neurons['l2'], neurons['l3']], stddev=0.1, name='w3'),
-            # 'l4': weight_initializer(shape=[neurons['l3'], neurons['l4']], stddev=0.1, name='w4'),
             'out': weight_initializer(shape=[neurons['l3'], neurons['out']], stddev=0.1, name='w_out')
         }
 
@@ -143,24 +143,19 @@ def train(k, x_data, y_data,
             'l1': bias_initializer(init_value=0.1, shape=[neurons['l1']], name='b1'),
             'l2': bias_initializer(init_value=0.1, shape=[neurons['l2']], name='b2'),
             'l3': bias_initializer(init_value=0.1, shape=[neurons['l3']], name='b3'),
-            # 'l4': bias_initializer(init_value=0.1, shape=[neurons['l4']], name='b4'),
             'out': bias_initializer(init_value=0.1, shape=[neurons['out']], name='b_out')
         }
         # 1st Layer --> Fully Connected (1024 Neurons)
         layer_1 = fully_connected(x, weights['l1'], biases['l1'], name='l1')
         layer_1 = drop_out(layer_1, keep_prob)
 
-        # 2nd Layer --> Fully Connected (512 Neurons)
+        # 2nd Layer --> Fully Connected (256 Neurons)
         layer_2 = fully_connected(layer_1, weights['l2'], biases['l2'], name='l2')
         layer_2 = drop_out(layer_2, keep_prob)
 
-        # 3rd Layer --> Fully Connected (256 Neurons)
+        # 3rd Layer --> Fully Connected (64 Neurons)
         layer_3 = fully_connected(layer_2, weights['l3'], biases['l3'], name='l3')
         layer_3 = drop_out(layer_3, keep_prob)
-
-        # 4th Layer --> Fully Connected (128 Neurons)
-        # layer_4 = fully_connected(layer_3, weights['l4'], biases['l4'], name='l4')
-        # layer_4 = drop_out(layer_4, keep_prob)
 
         # Final Layer --> Fully Connected (N_DISEASES Neurons)
         final_output = fully_connected(layer_3, weights['out'], biases['out'], name='l_out')
@@ -178,18 +173,18 @@ def train(k, x_data, y_data,
         training_loss = []
         validation_loss = []
 
-        saver = tf.train.Saver()
-        additional_path = 'model_{0}'.format(k)
-        path = LOCAL_LOCATION_SAVE + additional_path
-        make_directory(path)
-        with open(path + '/parameters.txt', 'w') as f:
-            f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
-            f.write(
-                str(n_samples) + "\t" + str(n_features) + "\t" +
-                str(learning_rate) + "\t" + str(n_epochs) + "\t" +
-                str(n_batch_learn) + "\t" + str(n_batches) + "\n")
-        log_filename = path + '/log.txt'
-        log_file = open(log_filename, 'w')
+        # saver = tf.train.Saver()
+        # additional_path = 'model_{0}_{1}'.format(os.getpid(), k)
+        # path = LOCAL_LOCATION_SAVE + additional_path
+        # make_directory(path)
+        # with open(path + '/parameters.txt', 'w') as f:
+        #     f.write("n_samples\tn_features\tn_diseases\tLambda\tlearning_rate\tn_epochs\tn_batch_learn\tn_batches\n")
+        #     f.write(
+        #         str(n_samples) + "\t" + str(n_features) + "\t" +
+        #         str(learning_rate) + "\t" + str(n_epochs) + "\t" +
+        #         str(n_batch_learn) + "\t" + str(n_batches) + "\n")
+        # log_filename = path + '/log.txt'
+        # log_file = open(log_filename, 'w')
         with tf.Session() as sess:
             sess.run(init)
             for epoch in range(n_epochs):
@@ -215,30 +210,30 @@ def train(k, x_data, y_data,
                     correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y_test, 1))
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                     validation_acc.append(accuracy.eval(feed_dict))
-                message = "Epoch:" + '%04d' % (epoch + 1) \
-                          + "\tValidation Accuracy =" + '%01.9f' % (validation_acc[-1]) \
-                          + "\tValidation Loss =" + '%09.5f' % (validation_loss[-1]) \
-                          + "\tTraining Accuracy =" + '%01.9f' % (training_acc[-1]) \
-                          + "\tTraining Loss =" + '%09.5f' % (training_loss[-1]) \
-                          + "\n"
-                log_file.write(message)
+                # message = "Epoch:" + '%04d' % (epoch + 1) \
+                #           + "\tValidation Accuracy =" + '%01.9f' % (validation_acc[-1]) \
+                #           + "\tValidation Loss =" + '%09.5f' % (validation_loss[-1]) \
+                #           + "\tTraining Accuracy =" + '%01.9f' % (training_acc[-1]) \
+                #           + "\tTraining Loss =" + '%09.5f' % (training_loss[-1]) \
+                #           + "\n"
+                # log_file.write(message)
                 print("Epoch:", '%04d' % (epoch + 1),
                       "\tValidation Accuracy =", '%01.9f' % (validation_acc[-1]),
                       "\tValidation Loss =", '%09.5f' % (validation_loss[-1]),
                       "\tTraining Accuracy =", '%01.9f' % (training_acc[-1]),
                       "\tTraining Loss =", '%09.5f' % (training_loss[-1]))
-            model_path = path + '/session.ckpt'
-            saver.save(sess, model_path)
+            # model_path = path + '/session.ckpt'
+            # saver.save(sess, model_path)
         print("Training Finished!")
-        log_file.close()
-        new_path = path + '_{0}'.format(validation_acc[-1])
-        os.rename(path, new_path)
-        path = new_path
-
-        save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
-        print("Plots have been saved!")
+        # log_file.close()
+        # new_path = path + '_{0}'.format(validation_acc[-1])
+        # os.rename(path, new_path)
+        # path = new_path
+        #
+        # save_model_results(k, path, validation_acc, validation_loss, training_acc, training_loss)
+        # print("Plots have been saved!")
         import csv
-        with open('./result.csv', 'a') as file:
+        with open('./result_{0}.csv'.format(k), 'a') as file:
             writer = csv.writer(file)
             writer.writerow([validation_acc[-1], validation_loss[-1]])
 
@@ -268,18 +263,18 @@ def random_train(k, x_train, y_train,
     global N_FEATURES
     new_X = []
     if k < 19671:
-        random_feature_indices = np.random.choice(N_FEATURES, k, replace=False)
-        # print(random_feature_indices)
+        random_feature_indices = np.random.choice(19671, k, replace=False)
+        print(np.array(random_feature_indices))
         new_X = x_train[random_feature_indices]
         print(new_X.shape)
         N_FEATURES = new_X.shape[1]
-    train(k, new_X, y_train,
-          n_samples=N_SAMPLES,
-          n_features=N_FEATURES,
-          n_diseases=N_DISEASES,
-          learning_rate=learning_rate,
-          n_batch_learn=n_batch_learn,
-          n_batches=n_batches)
+        train(k, new_X, y_train,
+              n_samples=N_SAMPLES,
+              n_features=N_FEATURES,
+              n_diseases=N_DISEASES,
+              learning_rate=learning_rate,
+              n_batch_learn=n_batch_learn,
+              n_batches=n_batches)
 
 
 def random_choice(n, features):
@@ -297,9 +292,9 @@ if __name__ == '__main__':
     y_filename = LOCAL_LOCATION_Y
     print("Loading data...")
     x_train, y_train = load_data(x_filename), load_data(y_filename)
-    print("Normalizing Data")
-    x_train = normalize_data(x_train)
-    # print("Data has been loaded successfully!")
+    # print("Normalizing Data")
+    # x_train = normalize_data(x_train)
+    print("Data has been loaded successfully!")
     # N_SAMPLES, N_FEATURES = x_train.shape
     y_train = modify_output(y_train)
     y_train = pd.DataFrame(y_train)
@@ -312,7 +307,7 @@ if __name__ == '__main__':
     #               [[N_FEATURES, x_train, y_train, LAMBDA, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES + i * 750] for i in
     #                range(N_PROCESSES)])
     for i in range(1000):
-        random_train(50, x_train, y_train)
+        random_train(100, x_train, y_train)
     # random_train(N_FEATURES, x_train, y_train, LEARNING_RATE, N_BATCH_LEARN, N_BATCHES)
     # random_train(N_FEATURES, x_train, y_train, 1.0, N_BATCH_LEARN, N_BATCHES)
     # random_train(N_FEATURES, x_train, y_train, 1.0, N_BATCH_LEARN, N_BATCHES)
