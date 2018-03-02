@@ -184,6 +184,7 @@ def model_2(x_data, y_data, n_features=50, n_diseases=1, n_epochs=250, n_batches
                     correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y_test, 1))
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                     validation_acc.append(accuracy.eval(feed_dict))
+            if epoch % 5 == 0:
                 print("Epoch:", '%04d' % (epoch + 1),
                       "\tValidation Accuracy =", '%01.9f' % (validation_acc[-1]),
                       "\tValidation Loss =", '%09.5f' % (validation_loss[-1]),
@@ -200,6 +201,7 @@ def main():
     # y_data = pd.DataFrame([[i] for i in range(100)])
     x_data, y_data = load_data(LOCAL_LOCATION_X)[random_features], load_data(LOCAL_LOCATION_Y)[0]
     print(y_data.shape)
+    np.reshape()
     print("Train Deep Neural Networks")
     model_2(x_data, y_data)
 
