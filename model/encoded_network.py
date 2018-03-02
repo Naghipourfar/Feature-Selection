@@ -7,6 +7,9 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 
+import warnings
+warnings.filterwarnings('ignore')
+
 sys.setrecursionlimit(10000000)
 
 """
@@ -17,6 +20,8 @@ sys.setrecursionlimit(10000000)
 # Constants
 LOCAL_LOCATION_X = "../Data/fpkm_normalized.csv"
 LOCAL_LOCATION_Y = "../Data/optimal_encoded_scae_dropout.csv"
+DAMAVAND_LOCATION_X = "~/f/Behrooz/dataset_local/fpkm_normalized.csv"
+DAMAVAND_LOCATION_Y = "~/f/Behrooz/dataset_local/optimal_encoded_scae_dropout.csv"
 
 # Hyper-Parameters
 LEARNING_RATE = 1e-3
@@ -62,7 +67,7 @@ def train(x_data, y_data):
     with tf.Graph().as_default():
         feature_columns = [tf.feature_column.numeric_column('x', shape=X_train.shape[1:])]
         regressor = tf.contrib.learn.DNNRegressor(feature_columns=feature_columns,
-                                                  activation_fn=tf.nn.relu, hidden_units=[1024, 256, 64])
+                                                  activation_fn=tf.nn.relu, hidden_units=[1024, 512, 256, 128, 64])
 
         def input_fn(x, y=None):
             if y is not None:  # Training
@@ -75,7 +80,7 @@ def train(x_data, y_data):
 
         # Training...
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={'x': X_train.values}, y=Y_train.values, batch_size=50, num_epochs=10000, shuffle=True)
+            x={'x': X_train.values}, y=Y_train.values, batch_size=50, num_epochs=500, shuffle=True)
         print("Training...")
         regressor.fit(input_fn=train_input_fn, steps=5000)
 
@@ -184,12 +189,12 @@ def model_2(x_data, y_data, n_features=50, n_diseases=1, n_epochs=250, n_batches
                     correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y_test, 1))
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
                     validation_acc.append(accuracy.eval(feed_dict))
-            if epoch % 5 == 0:
-                print("Epoch:", '%04d' % (epoch + 1),
-                      "\tValidation Accuracy =", '%01.9f' % (validation_acc[-1]),
-                      "\tValidation Loss =", '%09.5f' % (validation_loss[-1]),
-                      "\tTraining Accuracy =", '%01.9f' % (training_acc[-1]),
-                      "\tTraining Loss =", '%09.5f' % (training_loss[-1]))
+                if epoch % 5 == 0:
+                    print("Epoch:", '%04d' % (epoch + 1) if epoch == 0 else epoch,
+                          "\tValidation Accuracy =", '%01.9f' % (validation_acc[-1]),
+                          "\tValidation Loss =", '%09.5f' % (validation_loss[-1]),
+                          "\tTraining Accuracy =", '%01.9f' % (training_acc[-1]),
+                          "\tTraining Loss =", '%09.5f' % (training_loss[-1]))
         print("Training Finished!")
 
 
@@ -199,11 +204,11 @@ def main():
     print("\nLoding Data...")
     # x_data = pd.DataFrame([[i for i in range(50)] for _ in range(100)])
     # y_data = pd.DataFrame([[i] for i in range(100)])
-    x_data, y_data = load_data(LOCAL_LOCATION_X)[random_features], load_data(LOCAL_LOCATION_Y)[0]
+    x_data, y_data = load_data(LOCAL_LOCATION_X), load_data(LOCAL_LOCATION_Y)[0]
     print(y_data.shape)
-    np.reshape()
+    y_data = pd.DataFrame(np.reshape(y_data, newshape=[-1, 1]))
     print("Train Deep Neural Networks")
-    model_2(x_data, y_data)
+    train(x_data, y_data)
 
 
 if __name__ == '__main__':
