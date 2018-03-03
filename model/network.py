@@ -127,22 +127,25 @@ def train(k, x_data, y_data,
         keep_prob = tf.placeholder(tf.float32)
         neurons = {  # TODO train This new architecture
             'in': n_features,
-            'l1': 1024,
-            'l2': 256,
-            'l3': 64,
+            'l1': 64,
+            'l2': 32,
+            'l3': 16,
+            'l4': 32,
             'out': n_diseases
         }
         weights = {
             'l1': weight_initializer(shape=[neurons['in'], neurons['l1']], stddev=0.1, name='w1'),
             'l2': weight_initializer(shape=[neurons['l1'], neurons['l2']], stddev=0.1, name='w2'),
             'l3': weight_initializer(shape=[neurons['l2'], neurons['l3']], stddev=0.1, name='w3'),
-            'out': weight_initializer(shape=[neurons['l3'], neurons['out']], stddev=0.1, name='w_out')
+            'l4': weight_initializer(shape=[neurons['l3'], neurons['l4']], stddev=0.1, name='w4'),
+            'out': weight_initializer(shape=[neurons['l4'], neurons['out']], stddev=0.1, name='w_out')
         }
 
         biases = {
             'l1': bias_initializer(init_value=0.1, shape=[neurons['l1']], name='b1'),
             'l2': bias_initializer(init_value=0.1, shape=[neurons['l2']], name='b2'),
             'l3': bias_initializer(init_value=0.1, shape=[neurons['l3']], name='b3'),
+            'l4': bias_initializer(init_value=0.1, shape=[neurons['l4']], name='b4'),
             'out': bias_initializer(init_value=0.1, shape=[neurons['out']], name='b_out')
         }
         # 1st Layer --> Fully Connected (1024 Neurons)
@@ -157,8 +160,12 @@ def train(k, x_data, y_data,
         layer_3 = fully_connected(layer_2, weights['l3'], biases['l3'], name='l3')
         layer_3 = drop_out(layer_3, keep_prob)
 
+        # 4thLayer --> Fully Connected (64 Neurons)
+        layer_4 = fully_connected(layer_3, weights['l4'], biases['l4'], name='l4')
+        layer_4 = drop_out(layer_4, keep_prob)
+
         # Final Layer --> Fully Connected (N_DISEASES Neurons)
-        final_output = fully_connected(layer_3, weights['out'], biases['out'], name='l_out')
+        final_output = fully_connected(layer_4, weights['out'], biases['out'], name='l_out')
 
         loss = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits(logits=final_output, labels=y),

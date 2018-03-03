@@ -56,7 +56,7 @@ def drop_out(prev_output, keep_prob):
     return tf.nn.dropout(prev_output, keep_prob)
 
 
-def train(x_data, y_data):
+def train(x_data, y_data, y_col, num_epochs=10000, steps=50000, batch_size=2500):
     # Split data into train/test = 80%/20%
     X_train, X_test, Y_train, Y_test = train_test_split(x_data, y_data, test_size=0.20)
     print(X_train.shape)
@@ -67,7 +67,7 @@ def train(x_data, y_data):
     with tf.Graph().as_default():
         feature_columns = [tf.feature_column.numeric_column('x', shape=X_train.shape[1:])]
         regressor = tf.contrib.learn.DNNRegressor(feature_columns=feature_columns,
-                                                  activation_fn=tf.nn.relu, hidden_units=[1024, 512, 256, 128, 64])
+                                                  activation_fn=tf.nn.relu, hidden_units=[1024, 512, 64])
 
         def input_fn(x, y=None):
             if y is not None:  # Training
@@ -80,9 +80,9 @@ def train(x_data, y_data):
 
         # Training...
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={'x': X_train.values}, y=Y_train.values, batch_size=50, num_epochs=500, shuffle=True)
+            x={'x': X_train.values}, y=Y_train.values, batch_size=batch_size, num_epochs=num_epochs, shuffle=True)
         print("Training...")
-        regressor.fit(input_fn=train_input_fn, steps=5000)
+        regressor.fit(input_fn=train_input_fn, steps=steps)
 
         print("Testing...")
         test_input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -90,8 +90,8 @@ def train(x_data, y_data):
         predictions = regressor.predict_scores(input_fn=test_input_fn)
 
         predictions = [p for p in predictions]
-        print(predictions)
-        print(len(predictions))
+        # print(predictions)
+        # print(len(predictions))
         y_predicted = np.array(predictions)
         y_predicted = y_predicted.reshape(np.array(Y_test).shape)
 
@@ -102,6 +102,11 @@ def train(x_data, y_data):
         # Score with tensorflow
         scores = regressor.evaluate(input_fn=test_input_fn)
         print('MSE (tensorflow): {0:f}'.format(scores['loss']))
+
+        with open('../Results/encoded/result_{0}.csv'.format(y_col), 'a') as file:
+            import csv
+            writer = csv.writer(file)
+            writer.writerow([scores['loss']])
 
         # regressor.fit(input_fn=lambda: input_fn(X_train, Y_train), steps=100)
         # evaluation = regressor.evaluate(input_fn=lambda: input_fn(X_test), steps=1)
@@ -199,16 +204,21 @@ def model_2(x_data, y_data, n_features=50, n_diseases=1, n_epochs=250, n_batches
 
 
 def main():
-    random_features = np.random.choice(19671, 50, replace=False)
-    print(np.array(random_features))
-    print("\nLoding Data...")
+    print("Loding Data...")
     # x_data = pd.DataFrame([[i for i in range(50)] for _ in range(100)])
     # y_data = pd.DataFrame([[i] for i in range(100)])
-    x_data, y_data = load_data(LOCAL_LOCATION_X), load_data(LOCAL_LOCATION_Y)[0]
+    x_data, y_data = load_data(DAMAVAND_LOCATION_X), load_data(DAMAVAND_LOCATION_Y)
     print(y_data.shape)
-    y_data = pd.DataFrame(np.reshape(y_data, newshape=[-1, 1]))
+    # y_data = pd.DataFrame(np.reshape(y_data, newshape=[-1, 1]))
     print("Train Deep Neural Networks")
-    train(x_data, y_data)
+    for i in range(100):
+        random_features = np.random.choice(19671, 50, replace=False)
+        print(np.array(random_features))
+        random_x = x_data[random_features]
+        for y_col in range(y_data.shape[1]):
+            new_y = y_data[y_col]
+            new_y = pd.DataFrame(np.reshape(new_y, newshape=[-1, 1]))
+            train(random_x, new_y, y_col, num_epochs=5000, steps=5000, batch_size=2500)
 
 
 if __name__ == '__main__':
