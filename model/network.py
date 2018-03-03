@@ -295,8 +295,8 @@ def random_choice(n, features):
 
 
 if __name__ == '__main__':
-    x_filename = LOCAL_LOCATION_X
-    y_filename = LOCAL_LOCATION_Y
+    x_filename = DAMAVAND_LOCATION_X
+    y_filename = DAMAVAND_LOCATION_Y
     print("Loading data...")
     x_train, y_train = load_data(x_filename), load_data(y_filename)
     # print("Normalizing Data")
