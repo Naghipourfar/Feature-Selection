@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 
 import warnings
+
 warnings.filterwarnings('ignore')
 
 sys.setrecursionlimit(10000000)
@@ -158,7 +159,7 @@ def model_2(x_data, y_data, n_features=50, n_diseases=1, n_epochs=250, n_batches
         # Final Layer --> Fully Connected (N_DISEASES Neurons)
         final_output = fully_connected(layer_3, weights['out'], biases['out'], name='l_out')
 
-        loss = tf.reduce_mean(tf.square(final_output - y),name='loss')
+        loss = tf.reduce_mean(tf.square(final_output - y), name='loss')
         optimizer = tf.train.AdamOptimizer(learning_rate=0.001, name='optimizer')
         train_step = optimizer.minimize(loss, name='train_step')
 

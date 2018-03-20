@@ -30,7 +30,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 2000
-N_EPOCHS = 100
+N_EPOCHS = 5000
 N_BATCH_LEARN = 10
 
 
@@ -127,10 +127,10 @@ def train(k, x_data, y_data,
         keep_prob = tf.placeholder(tf.float32)
         neurons = {  # TODO train This new architecture
             'in': n_features,
-            'l1': 64,
-            'l2': 32,
-            'l3': 16,
-            'l4': 32,
+            'l1': 1024,
+            'l2': 512,
+            'l3': 256,
+            'l4': 128,
             'out': n_diseases
         }
         weights = {
