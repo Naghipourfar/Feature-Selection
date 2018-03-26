@@ -60,6 +60,7 @@ x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.
 # Random Feature Selection
 random_feature_indices = np.random.choice(19671, N_RANDOM_FEATURES, replace=False)
 x_train = x_train[random_feature_indices]
+x_test = x_test[random_feature_indices]
 
 # Design Model
 input_layer = Input(shape=(neurons['in'],))
@@ -72,22 +73,22 @@ l3 = Dense(neurons['l3'], activation='relu')(l2)
 
 l4 = Dense(neurons['l4'], activation='relu')(l3)
 
-output_layer = Dense(neurons['out'], activation='relu')(l4)
+output_layer = Dense(neurons['out'], activation='softmax')(l4)
 
 # Compile Model
 network = Model(input_layer, output_layer)
 
-network.compile(optimizer='adam', loss='categorical_crossentropy')
+network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 network.summary()
 
 # Train Model
-network.fit(x=x_train,
-            y=y_train,
+network.fit(x=x_train.as_matrix(),
+            y=y_train.as_matrix(),
             epochs=N_EPOCHS,
             batch_size=N_BATCHES,
             shuffle=True,
-            validation_data=(x_test, y_test))
+            validation_data=(x_test.as_matrix(), y_test.as_matrix()))
 
 # TODO: Use Callback function for our network!
 
