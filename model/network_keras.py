@@ -3,6 +3,7 @@ import pandas as pd
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import keras
 from keras.layers import Input, Dense
 from keras.models import Model
 from sklearn.model_selection import train_test_split
@@ -43,16 +44,17 @@ def modify_output(target):
         output_dict[row[0]] = i
         i += 1
     N_DISEASES = i
-    new_output = [[0 for _ in range(N_DISEASES)] for __ in range(N_SAMPLES)]
+    new_output = [0 for _ in range(N_SAMPLES)]
     for idx, y in target.iterrows():
-        new_output[idx][output_dict[y[0]]] = 1
+        new_output[idx] = output_dict[y[0]]
     return new_output
 
 
 # Load Data
-x_data = pd.read_csv("../Data/fpkm_normalized.csv")
-y_data = pd.read_csv("../Data/disease.csv")
+x_data = pd.read_csv("../Data/fpkm_normalized.csv", header=None)
+y_data = pd.read_csv("../Data/disease.csv", header=None)
 y_data = pd.DataFrame(modify_output(y_data))
+y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
 
 # Train/Test Split
 x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.20)
