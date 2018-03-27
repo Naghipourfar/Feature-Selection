@@ -243,6 +243,7 @@ def train(k, x_data, y_data,
         with open('./result_{0}.csv'.format(k), 'a') as file:
             writer = csv.writer(file)
             writer.writerow([validation_acc[-1], validation_loss[-1]])
+        tf.keras.callbacks.ModelCheckpoint('./weights_{0}_{1}'.format(k, validation_acc[-1]), save_best_only=True)
 
 
 def modify_output(target):

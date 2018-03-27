@@ -1,11 +1,14 @@
 import numpy as np
 import pandas as pd
+import os
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import keras
-from keras.layers import Input, Dense
+from keras.layers import Input, Dense, Dropout
 from keras.models import Model
+from keras.callbacks import ModelCheckpoint
+
 from sklearn.model_selection import train_test_split
 
 """
@@ -19,8 +22,8 @@ DROP_OUT = 0.5
 N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
-N_BATCHES = 2000
-N_EPOCHS = 250
+N_BATCHES = 256
+N_EPOCHS = 3000
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
@@ -69,13 +72,21 @@ input_layer = Input(shape=(neurons['in'],))
 
 l1 = Dense(neurons['l1'], activation='relu')(input_layer)
 
-l2 = Dense(neurons['l2'], activation='relu')(l1)
+l1_dropout = Dropout(DROP_OUT)(l1)
 
-l3 = Dense(neurons['l3'], activation='relu')(l2)
+l2 = Dense(neurons['l2'], activation='relu')(l1_dropout)
 
-l4 = Dense(neurons['l4'], activation='relu')(l3)
+l2_dropout = Dropout(DROP_OUT)(l2)
 
-output_layer = Dense(neurons['out'], activation='softmax')(l4)
+l3 = Dense(neurons['l3'], activation='relu')(l2_dropout)
+
+l3_dropout = Dropout(DROP_OUT)(l3)
+
+l4 = Dense(neurons['l4'], activation='relu')(l3_dropout)
+
+l4_dropout = Dropout(DROP_OUT)(l4)
+
+output_layer = Dense(neurons['out'], activation='softmax')(l4_dropout)
 
 # Compile Model
 network = Model(input_layer, output_layer)
@@ -84,13 +95,21 @@ network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc
 
 network.summary()
 
+os.makedirs('../Results/Keras/{0}'.format(os.getpid()))
+save_path = '../Results/Keras/{0}'.format(os.getpid()) + 'weights.{epoch:02d}-{val_acc:.4f}.hdf5'
+checkpointer = ModelCheckpoint(filepath=save_path,
+                               verbose=1,
+                               monitor='val_acc',
+                               save_best_only=True,
+                               mode='auto',
+                               period=50)
+
 # Train Model
 network.fit(x=x_train.as_matrix(),
             y=y_train.as_matrix(),
             epochs=N_EPOCHS,
             batch_size=N_BATCHES,
             shuffle=True,
-            validation_data=(x_test.as_matrix(), y_test.as_matrix()))
-
-# TODO: Use Callback function for our network!
-
+            validation_data=(x_test.as_matrix(), y_test.as_matrix()),
+            callbacks=[checkpointer],
+            verbose=0)
