@@ -95,8 +95,8 @@ network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc
 
 network.summary()
 
-os.makedirs('../Results/Keras/{0}'.format(os.getpid()))
-save_path = '../Results/Keras/{0}'.format(os.getpid()) + 'weights.{epoch:02d}-{val_acc:.4f}.hdf5'
+os.makedirs('../Results/Keras/{0}/'.format(os.getpid()))
+save_path = '../Results/Keras/{0}/'.format(os.getpid()) + 'model.{epoch:02d}-{val_acc:.4f}.hdf5'
 checkpointer = ModelCheckpoint(filepath=save_path,
                                verbose=1,
                                monitor='val_acc',
