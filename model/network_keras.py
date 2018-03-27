@@ -23,7 +23,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 256
-N_EPOCHS = 3000
+N_EPOCHS = 1000
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
@@ -112,4 +112,10 @@ network.fit(x=x_train.as_matrix(),
             shuffle=True,
             validation_data=(x_test.as_matrix(), y_test.as_matrix()),
             callbacks=[checkpointer],
-            verbose=0)
+            verbose=1)
+
+import csv
+with open('./result_keras.csv', 'a') as file:
+    writer = csv.writer(file)
+    loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
+    writer.writerow([accuracy, loss])
