@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
-import os
+import os, sys
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import keras
-from keras.layers import Input, Dense, Dropout
+from keras.layers import Input, Dense, Dropout, GaussianNoise
 from keras.models import Model
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ModelCheckpoint, Callback
 
 from sklearn.model_selection import train_test_split
 
@@ -16,6 +16,12 @@ from sklearn.model_selection import train_test_split
     Email : mn7697np@gmail.com
     Website: http://ce.sharif.edu/~naghipourfar
 """
+# Constants
+DAMAVAND_LOCATION_X = "~/f/Behrooz/dataset_local/fpkm_normalized.csv"
+DAMAVAND_LOCATION_Y = "~/f/Behrooz/dataset_local/disease.csv"
+LOCAL_LOCATION_X = "../Data/fpkm_normalized.csv"
+LOCAL_LOCATION_Y = "../Data/disease.csv"
+
 # Hyper-Parameters
 LEARNING_RATE = 1e-3
 DROP_OUT = 0.5
@@ -23,7 +29,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 256
-N_EPOCHS = 1000
+N_EPOCHS = 2500
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
@@ -53,69 +59,87 @@ def modify_output(target):
     return new_output
 
 
-# Load Data
-x_data = pd.read_csv("../Data/fpkm_normalized.csv", header=None)
-y_data = pd.read_csv("../Data/disease.csv", header=None)
-y_data = pd.DataFrame(modify_output(y_data))
-y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
+def run(stddev):
+    # Train/Test Split
+    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.20)
 
-# Train/Test Split
-x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.20)
+    # Random Feature Selection
+    random_feature_indices = np.random.choice(19671, N_RANDOM_FEATURES, replace=False)
+    x_train = x_train[random_feature_indices]
+    x_test = x_test[random_feature_indices]
 
-# Random Feature Selection
-random_feature_indices = np.random.choice(19671, N_RANDOM_FEATURES, replace=False)
-x_train = x_train[random_feature_indices]
-x_test = x_test[random_feature_indices]
+    # Design Model
+    input_layer = Input(shape=(neurons['in'],))
 
-# Design Model
-input_layer = Input(shape=(neurons['in'],))
+    noise_layer = GaussianNoise(stddev)(input_layer)
 
-l1 = Dense(neurons['l1'], activation='relu')(input_layer)
+    l1 = Dense(neurons['l1'], activation='relu')(noise_layer)
 
-l1_dropout = Dropout(DROP_OUT)(l1)
+    l1_dropout = Dropout(DROP_OUT)(l1)
 
-l2 = Dense(neurons['l2'], activation='relu')(l1_dropout)
+    l2 = Dense(neurons['l2'], activation='relu')(l1_dropout)
 
-l2_dropout = Dropout(DROP_OUT)(l2)
+    l2_dropout = Dropout(DROP_OUT)(l2)
 
-l3 = Dense(neurons['l3'], activation='relu')(l2_dropout)
+    l3 = Dense(neurons['l3'], activation='relu')(l2_dropout)
 
-l3_dropout = Dropout(DROP_OUT)(l3)
+    l3_dropout = Dropout(DROP_OUT)(l3)
 
-l4 = Dense(neurons['l4'], activation='relu')(l3_dropout)
+    l4 = Dense(neurons['l4'], activation='relu')(l3_dropout)
 
-l4_dropout = Dropout(DROP_OUT)(l4)
+    l4_dropout = Dropout(DROP_OUT)(l4)
 
-output_layer = Dense(neurons['out'], activation='softmax')(l4_dropout)
+    output_layer = Dense(neurons['out'], activation='softmax')(l4_dropout)
 
-# Compile Model
-network = Model(input_layer, output_layer)
+    # Compile Model
+    network = Model(input_layer, output_layer)
 
-network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-network.summary()
+    # network.summary()
+    if not os._exists('./Results/Keras/{0}_{1}/'.format(os.getpid(), stddev)):
+        os.makedirs('./Results/Keras/{0}_{1}/'.format(os.getpid(), stddev))
+    save_path = './Results/Keras/{0}_{1}/'.format(os.getpid(), stddev) + 'model.{epoch:02d}-{val_acc:.4f}.hdf5'
 
-os.makedirs('../Results/Keras/{0}/'.format(os.getpid()))
-save_path = '../Results/Keras/{0}/'.format(os.getpid()) + 'model.{epoch:02d}-{val_acc:.4f}.hdf5'
-checkpointer = ModelCheckpoint(filepath=save_path,
-                               verbose=1,
-                               monitor='val_acc',
-                               save_best_only=True,
-                               mode='auto',
-                               period=50)
+    # Create a Callback for Model
+    checkpointer = ModelCheckpoint(filepath=save_path,
+                                   verbose=0,
+                                   monitor='val_acc',
+                                   save_best_only=True,
+                                   mode='auto',
+                                   period=1)
 
-# Train Model
-network.fit(x=x_train.as_matrix(),
-            y=y_train.as_matrix(),
-            epochs=N_EPOCHS,
-            batch_size=N_BATCHES,
-            shuffle=True,
-            validation_data=(x_test.as_matrix(), y_test.as_matrix()),
-            callbacks=[checkpointer],
-            verbose=1)
+    # Train Model
+    network.fit(x=x_train.as_matrix(),
+                y=y_train.as_matrix(),
+                epochs=N_EPOCHS,
+                batch_size=N_BATCHES,
+                shuffle=True,
+                validation_data=(x_test.as_matrix(), y_test.as_matrix()),
+                callbacks=[checkpointer],
+                verbose=1)
+    # Save Accuracy, Loss
+    import csv
+    with open('./result_noised.csv', 'a') as file:
+        writer = csv.writer(file)
+        loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
+        writer.writerow([accuracy, loss])
 
-import csv
-with open('./result_keras.csv', 'a') as file:
-    writer = csv.writer(file)
-    loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
-    writer.writerow([accuracy, loss])
+    # class DummyCheckpoint(Callback):
+    #     def on_train_begin(self, logs=None):
+    #         self.accuracies = []
+    #
+    #     def on_epoch_end(self, epoch, logs=None):
+    #         if (max(self.accuracies)) < logs.get('acc'):
+    #             self.accuracies.append(logs.get('acc'))
+
+
+if __name__ == '__main__':
+    # Load Data
+    x_data = pd.read_csv(DAMAVAND_LOCATION_X, header=None)
+    y_data = pd.read_csv(DAMAVAND_LOCATION_Y, header=None)
+    y_data = pd.DataFrame(modify_output(y_data))
+    y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
+
+    for stddev in [0.25, 0.2, 0.1, 0.05, 0.01]:
+        run(stddev)
