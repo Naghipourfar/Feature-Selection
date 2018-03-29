@@ -120,7 +120,7 @@ def run(stddev):
                 verbose=1)
     # Save Accuracy, Loss
     import csv
-    with open('./result_noised.csv', 'a') as file:
+    with open('./result_noised_{0}.csv'.format(stddev), 'a') as file:
         writer = csv.writer(file)
         loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
         writer.writerow([accuracy, loss])
@@ -140,6 +140,6 @@ if __name__ == '__main__':
     y_data = pd.read_csv(DAMAVAND_LOCATION_Y, header=None)
     y_data = pd.DataFrame(modify_output(y_data))
     y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
-
-    for stddev in [0.25, 0.2, 0.1, 0.05, 0.01]:
-        run(stddev)
+    for i in range(1000):
+        for stddev in [0.1, 0.05, 0.01]:
+            run(stddev)
