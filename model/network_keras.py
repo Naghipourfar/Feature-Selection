@@ -143,3 +143,4 @@ if __name__ == '__main__':
     for i in range(1000):
         for stddev in [0.1, 0.05, 0.01]:
             run(stddev)
+    print("Finished")
