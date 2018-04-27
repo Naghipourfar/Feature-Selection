@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 import os, sys
 
-import tensorflow as tf
-import matplotlib.pyplot as plt
 import keras
+import keras.backend as K
 from keras.layers import Input, Dense, Dropout, GaussianNoise
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint, Callback
@@ -109,15 +108,31 @@ def run(stddev):
                                    mode='auto',
                                    period=1)
 
+    get_3rd_layer_output = K.function([network.layers[0].input, K.learning_phase()],
+                                      [network.layers[3].output])
+    layer_output = get_3rd_layer_output([x_train, True])
+    # print(layer_output[0].shape)
+    # print(len(layer_output))
+    # print("*" * 100)
+
     # Train Model
-    network.fit(x=x_train.as_matrix(),
-                y=y_train.as_matrix(),
-                epochs=N_EPOCHS,
-                batch_size=N_BATCHES,
-                shuffle=True,
-                validation_data=(x_test.as_matrix(), y_test.as_matrix()),
-                callbacks=[checkpointer],
-                verbose=1)
+
+    for epoch in range(N_EPOCHS):
+        network.fit(x=x_train.as_matrix(),
+                    y=y_train.as_matrix(),
+                    epochs=1,
+                    batch_size=N_BATCHES,
+                    shuffle=True,
+                    validation_data=(x_test.as_matrix(), y_test.as_matrix()),
+                    callbacks=[checkpointer],
+                    verbose=1)
+        layer_output.append(get_3rd_layer_output([x_train, True])[0])
+        # print(layer_output)
+
+    # print(layer_output[0].shape)
+    # print(len(layer_output))
+    # print("*" * 100)
+
     # Save Accuracy, Loss
     import csv
     with open('./result_noised_{0}.csv'.format(stddev), 'a') as file:
@@ -132,15 +147,18 @@ def run(stddev):
     #     def on_epoch_end(self, epoch, logs=None):
     #         if (max(self.accuracies)) < logs.get('acc'):
     #             self.accuracies.append(logs.get('acc'))
+    return layer_output
 
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(DAMAVAND_LOCATION_X, header=None)
-    y_data = pd.read_csv(DAMAVAND_LOCATION_Y, header=None)
+    x_data = pd.read_csv(LOCAL_LOCATION_X, header=None)
+    y_data = pd.read_csv(LOCAL_LOCATION_Y, header=None)
     y_data = pd.DataFrame(modify_output(y_data))
     y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
-    for i in range(1000):
-        for stddev in [0.1, 0.05, 0.01]:
-            run(stddev)
+    # for i in range(1000):
+    #     for stddev in [0.1, 0.05, 0.01]:
+    layer_out = run(0)
     print("Finished")
+    np.savetxt("./decoder.csv", layer_out, delimiter=",")
+
