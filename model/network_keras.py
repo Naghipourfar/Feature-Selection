@@ -9,7 +9,6 @@ from keras.models import Model
 from keras.callbacks import ModelCheckpoint, Callback
 
 from sklearn.model_selection import train_test_split
-import mifs
 """
     Created by Mohsen Naghipourfar on 3/26/18.
     Email : mn7697np@gmail.com
