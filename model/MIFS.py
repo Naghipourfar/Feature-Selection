@@ -21,7 +21,6 @@ N_DISEASES = 34
 
 data = pd.read_csv(DAMAVAND_LOCATION_X, header=None)
 labels = pd.read_csv(DAMAVAND_LOCATION_Y, header=None)
-diseases = labels[0].value_counts().index
 
 random_feature_indices = np.random.choice(19671, 1000, replace=False)
 all_feature_indices = [i for i in range(19671)]
