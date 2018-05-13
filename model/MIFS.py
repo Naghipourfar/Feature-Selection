@@ -36,6 +36,6 @@ feature_selector = mifs.MutualInformationFeatureSelector(method='JMI', k=int(y.m
 feature_selector.fit(X, y)
 
 MI = feature_selector.mi_
-with open('./MI.txt', 'a') as file:
+with open('./MIFS.txt', 'a') as file:
     for i in range(len(feature_selector.mi_)):
         file.write("{0} : {1}\n".format(x_train.columns[feature_selector.ranking_[i]], MI[i]))
