@@ -55,4 +55,6 @@ def mRMR(number_of_selected_features):
 
 
 if __name__ == '__main__':
-    mRMR(200)
+    S = mRMR(200)
+    np.savetxt('./mRMR.csv', np.array(S), delimiter=',')
+    print("Finished!")
