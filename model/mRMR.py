@@ -36,7 +36,7 @@ def mRMR(number_of_selected_features):
     S.append(idx[0])
     F.__delitem__(idx[0])
     print("Feature {0} has been added to S".format(idx[0]))
-
+    sum_mi = 0
     for i in range(number_of_selected_features - 1):
         max_phi, max_idx = -10000, None
         for idx in F:
