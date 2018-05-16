@@ -37,3 +37,6 @@ class FeatureSelection(object):
     def _IWFS(self):
         pass
 
+    def _DCSF(self):
+        pass
+
