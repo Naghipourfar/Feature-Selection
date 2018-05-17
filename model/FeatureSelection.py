@@ -34,3 +34,6 @@ class FeatureSelection(object):
     def _JMI(self):
         pass
 
+    def _IWFS(self):
+        pass
+
