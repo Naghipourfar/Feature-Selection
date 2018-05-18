@@ -31,3 +31,6 @@ class FeatureSelection(object):
     def _NMIFS_FS2(self):
         pass
 
+    def _JMI(self):
+        pass
+
