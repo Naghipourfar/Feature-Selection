@@ -96,6 +96,8 @@ class FeatureSelection(object):
             return self._JMI()
         elif self.method == 'MIFS':
             return self._MIFS()
+        elif self.method == 'NMIFS_FS2':
+            return self._NMIFS_FS2()
 
 
     def get_best_features(self):
