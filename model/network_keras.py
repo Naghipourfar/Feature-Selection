@@ -57,14 +57,15 @@ def modify_output(target):
     return new_output
 
 
-def run(stddev):
+def run(stddev, x_data, y_data, random_selection=True):
     # Train/Test Split
     x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.20)
 
     # Random Feature Selection
-    random_feature_indices = np.random.choice(19671, N_RANDOM_FEATURES, replace=False)
-    x_train = x_train[random_feature_indices]
-    x_test = x_test[random_feature_indices]
+    if random_selection:
+        random_feature_indices = np.random.choice(19671, N_RANDOM_FEATURES, replace=False)
+        x_train = x_train[random_feature_indices]
+        x_test = x_test[random_feature_indices]
 
     # Design Model
     input_layer = Input(shape=(neurons['in'],))
@@ -107,25 +108,25 @@ def run(stddev):
                                    mode='auto',
                                    period=1)
 
-    get_3rd_layer_output = K.function([network.layers[0].input, K.learning_phase()],
-                                      [network.layers[3].output])
-    layer_output = get_3rd_layer_output([x_train, True])
+    # get_3rd_layer_output = K.function([network.layers[0].input, K.learning_phase()],
+    #                                   [network.layers[3].output])
+    # layer_output = get_3rd_layer_output([x_train, True])
     # print(layer_output[0].shape)
     # print(len(layer_output))
     # print("*" * 100)
 
     # Train Model
 
-    for epoch in range(N_EPOCHS):
-        network.fit(x=x_train.as_matrix(),
-                    y=y_train.as_matrix(),
-                    epochs=1,
-                    batch_size=N_BATCHES,
-                    shuffle=True,
-                    validation_data=(x_test.as_matrix(), y_test.as_matrix()),
-                    callbacks=[checkpointer],
-                    verbose=1)
-        layer_output.append(get_3rd_layer_output([x_train, True])[0])
+    # for epoch in range(N_EPOCHS):
+    network.fit(x=x_train.as_matrix(),
+                y=y_train.as_matrix(),
+                epochs=N_EPOCHS,
+                batch_size=N_BATCHES,
+                shuffle=True,
+                validation_data=(x_test.as_matrix(), y_test.as_matrix()),
+                callbacks=[checkpointer],
+                verbose=1)
+        # layer_output.append(get_3rd_layer_output([x_train, True])[0])
         # print(layer_output)
 
     # print(layer_output[0].shape)
@@ -146,7 +147,7 @@ def run(stddev):
     #     def on_epoch_end(self, epoch, logs=None):
     #         if (max(self.accuracies)) < logs.get('acc'):
     #             self.accuracies.append(logs.get('acc'))
-    return layer_output
+    # return layer_output
 
 
 if __name__ == '__main__':
@@ -157,7 +158,12 @@ if __name__ == '__main__':
     y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
     # for i in range(1000):
     #     for stddev in [0.1, 0.05, 0.01]:
-    layer_out = run(0)
+
+    mi_f_d = pd.read_csv('../Results/MI_F_D.csv', header=None)
+    top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
+    top_200_features = x_data[top_200_features_indices]
+
+    run(0, top_200_features, y_data, random_selection=False)
     print("Finished")
-    np.savetxt("./decoder.csv", layer_out, delimiter=",")
+    # np.savetxt("./decoder.csv", layer_out, delimiter=",")
 
