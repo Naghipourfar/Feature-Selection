@@ -102,6 +102,8 @@ class FeatureSelection(object):
             return self._IWFS()
         elif self.method == 'DCSF':
             return self._DCSF()
+        else :
+            return Exception("Invalid Feature Selection Method!")
 
 
     def get_best_features(self):
