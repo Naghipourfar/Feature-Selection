@@ -100,7 +100,8 @@ class FeatureSelection(object):
             return self._NMIFS_FS2()
         elif self.method == 'IWFS':
             return self._IWFS()
-
+        elif self.method == 'DCSF':
+            return self._DCSF()
 
 
     def get_best_features(self):
