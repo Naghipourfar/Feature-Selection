@@ -3,7 +3,9 @@ import pandas as pd
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from sklearn.feature_selection import mutu
+from sklearn.metrics import mutual_info_score
+from sklearn.feature_selection import mutual_info_classif
+import os
 
 """
     Created by Mohsen Naghipourfar on 5/20/18.
@@ -20,35 +22,38 @@ class FeatureSelection(object):
         self.target = target
         self.number_of_features = features.shape[1]
 
-    def _select_method(self):
+    def _select_features(self):
         if self.method == 'mRMR':
-            self._mRMR()
+            return self._mRMR()
 
     def _mRMR(self):
-        # S = []
-        # F = [i for i in range(self.number_of_features)]
-        # x_train = self.features
-        # # y = labels[0].iloc[:, ].astype('category').cat.codes
-        #
-        # mi_features_classes = pd.read_csv('./MI_F_D.csv', header=None).as_matrix()
-        # max_value, idx = np.amax(mi_features_classes), np.argmax(mi_features_classes)
-        # S.append(idx[0])
-        # F.__delitem__(idx[0])
-        # print("Feature {0} has been added to S".format(idx[0]))
-        # sum_mi = 0
-        # for i in range(self.k - 1):
-        #     max_phi, max_idx = -10000, None
-        #     for idx in F:
-        #         feature = x_train[idx]
-        #         dependency = mi_features_classes[idx]
-        #         redundency = (1.0 / len(S)) * sum([mutual_info_score(feature, x_train[f]) for f in S])
-        #         phi = dependency - redundency
-        #         if phi > max_phi:
-        #             max_phi = phi
-        #             max_idx = idx
-        #     S.append(max_idx)
-        #     F.__delitem__(max_idx)
-        #     print("Feature {0} has been added to S".format(max_idx))
+        S = []
+        F = [i for i in range(self.number_of_features)]
+        x_train = self.features
+        # y = labels[0].iloc[:, ].astype('category').cat.codes
+
+        if os.path.isfile('../MI_Analysis/MI_FD.csv'):
+            mi_features_classes = pd.read_csv('./MI_F_D.csv', header=None).as_matrix()
+        else:
+            mi_features_classes = self._calculate_FD_MI()
+
+        max_value, idx = np.amax(mi_features_classes), np.argmax(mi_features_classes)
+        S.append(idx[0])
+        F.__delitem__(idx[0])
+        print("{1}: Feature {0} has been added to S".format(idx[0], 1))
+        for i in range(self.k - 1):
+            max_phi, max_idx = -10000, None
+            for idx in F:
+                feature = x_train[idx]
+                dependency = mi_features_classes[idx]
+                redundancy = (1.0 / len(S)) * sum([mutual_info_score(feature, x_train[f]) for f in S])
+                phi = dependency - redundancy
+                if phi > max_phi:
+                    max_phi = phi
+                    max_idx = idx
+            S.append(max_idx)
+            F.__delitem__(max_idx)
+            print("{1}: Feature {0} has been added to S".format(max_idx, i + 2))
 
         return S
 
@@ -67,3 +72,24 @@ class FeatureSelection(object):
     def _DCSF(self):
         pass
 
+    def _calculate_pairwise_MI(self):
+        mutual_info_matrix = [[0 for _ in range(self.number_of_features)] for __ in range(self.number_of_features)]
+        x_train = self.features
+        for i in range(self.number_of_features):
+            feature_1 = x_train[i]
+            for j in range(i, self.number_of_features):
+                feature_2 = x_train[j]
+                mutual_information = mutual_info_score(feature_1, feature_2)
+                mutual_info_matrix[i][j] = mutual_information
+                mutual_info_matrix[j][i] = mutual_information
+        np.savetxt('../MI_Analysis/MI_pairwise.csv', np.array(mutual_info_matrix), delimiter=',')
+        return mutual_info_matrix
+
+    def _calculate_FD_MI(self):
+        # random_feature_indices = np.random.choice(19671, 10, replace=False)
+        x_train = self.features
+        y = self.target[0].iloc[:, ].astype('category').cat.codes
+
+        mi_features_classes = mutual_info_classif(x_train, y)
+        np.savetxt("./MI_Analysis/MI_FD.csv", mi_features_classes, delimiter=",")
+        return mi_features_classes
