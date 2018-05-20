@@ -48,7 +48,7 @@ class FeatureSelection(object):
             target Dataframe with shape (n_samples, )
 
 
-        Examples
+        Example
         --------
 
         import pandas as pd
