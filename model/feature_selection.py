@@ -94,6 +94,9 @@ class FeatureSelection(object):
             return self._mRMR()
         elif self.method == 'JMI':
             return self._JMI()
+        elif self.method == 'MIFS':
+            return self._MIFS()
+
 
     def get_best_features(self):
         return self._select_features()
