@@ -13,10 +13,6 @@ import os
     Website: http://ce.sharif.edu/~naghipourfar
 """
 
-"""
-
-"""
-
 
 class FeatureSelection(object):
     """
