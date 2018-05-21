@@ -51,18 +51,18 @@ class FeatureSelection(object):
         Examples
         --------
 
-        >>> import pandas as pd
-        >>> import FeatureSelection
+        import pandas as pd
+        from FeatureSelection import FeatureSelection
 
-        >>> # load X and y
-        >>> X = pd.read_csv('my_X_table.csv', index_col=0).values
-        >>> y = pd.read_csv('my_y_vector.csv', index_col=0).values
+        # load X and y
+        X = pd.read_csv('my_X_table.csv', index_col=0).values
+        y = pd.read_csv('my_y_vector.csv', index_col=0).values
 
-        >>> # define mRMR feature selection method
-        >>> feat_selector = FeatureSelection(method='mRMR', k=5, features=X, target=y)
+        # define mRMR feature selection method
+        feat_selector = FeatureSelection(method='mRMR', k=5, features=X, target=y)
 
-        >>> # find all relevant features
-        >>> features_indices = feat_selector.get_best_features()
+        # find all relevant features
+        features_indices = feat_selector.get_best_features()
 
         References
         ----------
@@ -92,7 +92,8 @@ class FeatureSelection(object):
     def _select_features(self):
         if self.method == 'mRMR':
             return self._mRMR()
-        elif self.method == ''
+        elif self.method == 'JMI':
+            return self._JMI()
 
     def get_best_features(self):
         return self._select_features()
