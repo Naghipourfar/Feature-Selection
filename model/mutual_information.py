@@ -27,7 +27,7 @@ def mi_feature_class():
     y = labels[0].iloc[:, ].astype('category').cat.codes
 
     mi_features_classes = mutual_info_classif(x_train, y)
-    np.savetxt("./MI_F_D.csv", mi_features_classes, delimiter=",")
+    np.savetxt("./MI_FD.csv", mi_features_classes, delimiter=",")
 
 
 def mi_pairwise():

@@ -31,7 +31,7 @@ N_EPOCHS = 2500
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
-    'in': 200,
+    'in': 4,
     'l1': 1024,
     'l2': 512,
     'l3': 256,
@@ -150,20 +150,21 @@ def run(stddev, x_data, y_data, random_selection=True):
     # return layer_output
 
 
-if __name__ == '__main__':
-    # Load Data
-    x_data = pd.read_csv(LOCAL_LOCATION_X, header=None)
-    y_data = pd.read_csv(LOCAL_LOCATION_Y, header=None)
-    y_data = pd.DataFrame(modify_output(y_data))
-    y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
-    # for i in range(1000):
-    #     for stddev in [0.1, 0.05, 0.01]:
-
-    mi_f_d = pd.read_csv('../Results/MI_F_D.csv', header=None)
-    top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
-    top_200_features = x_data[top_200_features_indices]
-
-    run(0, top_200_features, y_data, random_selection=False)
-    print("Finished")
-    # np.savetxt("./decoder.csv", layer_out, delimiter=",")
+# if __name__ == '__main__':
+#
+    # # Load Data
+    # x_data = pd.read_csv(LOCAL_LOCATION_X, header=None)
+    # y_data = pd.read_csv(LOCAL_LOCATION_Y, header=None)
+    # y_data = pd.DataFrame(modify_output(y_data))
+    # y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
+    # # for i in range(1000):
+    # #     for stddev in [0.1, 0.05, 0.01]:
+    #
+    # mi_f_d = pd.read_csv('../Results/MI_FD.csv', header=None)
+    # top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
+    # top_200_features = x_data[top_200_features_indices]
+    #
+    # run(0, top_200_features, y_data, random_selection=False)
+    # print("Finished")
+    # # np.savetxt("./decoder.csv", layer_out, delimiter=",")
 

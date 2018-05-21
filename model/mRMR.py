@@ -31,7 +31,7 @@ def mRMR(number_of_selected_features):
     x_train = data
     # y = labels[0].iloc[:, ].astype('category').cat.codes
 
-    mi_features_classes = pd.read_csv('./MI_F_D.csv', header=None).as_matrix()
+    mi_features_classes = pd.read_csv('./MI_FD.csv', header=None).as_matrix()
     max_value, idx = np.amax(mi_features_classes), np.argmax(mi_features_classes)
     S.append(idx[0])
     F.__delitem__(idx[0])

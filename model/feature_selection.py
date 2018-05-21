@@ -26,6 +26,9 @@ class FeatureSelection(object):
         if self.method == 'mRMR':
             return self._mRMR()
 
+    def get_best_features(self):
+        return self._select_features()
+
     def _mRMR(self):
         S = []
         F = [i for i in range(self.number_of_features)]
@@ -33,14 +36,16 @@ class FeatureSelection(object):
         # y = labels[0].iloc[:, ].astype('category').cat.codes
 
         if os.path.isfile('../MI_Analysis/MI_FD.csv'):
-            mi_features_classes = pd.read_csv('./MI_F_D.csv', header=None).as_matrix()
+            print("MI_FD Exists!")
+            mi_features_classes = pd.read_csv('../MI_Analysis/MI_FD.csv', header=None).as_matrix()
         else:
+            print("MI_FD doesn't Exists!")
             mi_features_classes = self._calculate_FD_MI()
 
         max_value, idx = np.amax(mi_features_classes), np.argmax(mi_features_classes)
-        S.append(idx[0])
-        F.__delitem__(idx[0])
-        print("{1}: Feature {0} has been added to S".format(idx[0], 1))
+        S.append(idx)
+        F.__delitem__(idx)
+        print("{1}: Feature {0} has been added to S".format(idx, 1))
         for i in range(self.k - 1):
             max_phi, max_idx = -10000, None
             for idx in F:
