@@ -13,9 +13,76 @@ import os
     Website: http://ce.sharif.edu/~naghipourfar
 """
 
+"""
+
+"""
+
 
 class FeatureSelection(object):
-    def __init__(self, method, k, features, target):
+    """
+        FeatureSelection stands for mutual information based features selection methods.
+        This class contains routines for selecting features using both
+        continuous and discrete y variables. Three selection algorithms are
+        implemented: mRMR, JMI, MIFS, NMIFS_FS2, IWFS, DCSF
+
+
+        Parameters
+        ----------
+
+        method : string, default = 'JMI'
+            Which mutual information based feature selection method to use:
+            - 'mRMR' : Max-Relevance Min-Redundancy [1]
+            - 'JMI' : Joint Mutual Information [2]
+            - 'MIFS' : Mutual Information based Feature Selection [3]
+            - 'NMIFS_FS2' : Mutual Information based Feature Selection (Modified) TODO Correction [4]
+            - 'IWFS' : TODO Complete [5]
+            - 'DCSF' : TODO Complete [6]
+
+        k : int, default = 5
+            Sets the number of features to be selected.
+
+        features : pd.DataFrame, default = None
+            features dataframe with shape (n_samples, n_features)
+
+        target : pd.DataFrame, default = None
+            target Dataframe with shape (n_samples, )
+
+
+        Examples
+        --------
+
+        >>> import pandas as pd
+        >>> import FeatureSelection
+
+        >>> # load X and y
+        >>> X = pd.read_csv('my_X_table.csv', index_col=0).values
+        >>> y = pd.read_csv('my_y_vector.csv', index_col=0).values
+
+        >>> # define mRMR feature selection method
+        >>> feat_selector = FeatureSelection(method='mRMR', k=5, features=X, target=y)
+
+        >>> # find all relevant features
+        >>> features_indices = feat_selector.get_best_features()
+
+        References
+        ----------
+
+        [1] H. Peng, Fulmi Long, C. Ding, "Feature selection based on mutual
+            information criteria of max-dependency, max-relevance,
+            and min-redundancy"
+            Pattern Analysis & Machine Intelligence 2005
+
+        [2] H. Yang and J. Moody, "Data Visualization and Feature Selection: New
+            Algorithms for Nongaussian Data"
+            NIPS 1999
+
+        [3] Bennasar M., Hicks Y., Setchi R., "Feature selection using Joint Mutual
+            Information Maximisation"
+            Expert Systems with Applications, Vol. 42, Issue 22, Dec 2015
+
+        """
+
+    def __init__(self, method='mRMR', k=5, features=None, target=None):
         self.method = method
         self.k = k
         self.features = features
@@ -25,6 +92,7 @@ class FeatureSelection(object):
     def _select_features(self):
         if self.method == 'mRMR':
             return self._mRMR()
+        elif self.method == ''
 
     def get_best_features(self):
         return self._select_features()
