@@ -153,3 +153,4 @@ if __name__ == '__main__':
     print("Finished")
     # np.savetxt("./decoder.csv", layer_out, delimiter=",")
 
+
