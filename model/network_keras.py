@@ -29,11 +29,11 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 256
-N_EPOCHS = 2500
+N_EPOCHS = 200
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
-    'in': 4,
+    'in': 12,
     'l1': 1024,
     'l2': 512,
     'l3': 256,
@@ -44,7 +44,7 @@ neurons = {
 
 def run(stddev, x_data, y_data, random_selection=True):
     # Train/Test Split
-    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.20)
+    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.30)
 
     # Random Feature Selection
     if random_selection:
@@ -111,8 +111,8 @@ def run(stddev, x_data, y_data, random_selection=True):
                 validation_data=(x_test.as_matrix(), y_test.as_matrix()),
                 callbacks=[checkpointer],
                 verbose=1)
-        # layer_output.append(get_3rd_layer_output([x_train, True])[0])
-        # print(layer_output)
+    # layer_output.append(get_3rd_layer_output([x_train, True])[0])
+    # print(layer_output)
 
     # print(layer_output[0].shape)
     # print(len(layer_output))
@@ -136,21 +136,21 @@ def run(stddev, x_data, y_data, random_selection=True):
 
 
 if __name__ == '__main__':
-
     # Load Data
-    x_data = pd.read_csv(LOCAL_LOCATION_X, header=None)
+    x_data = pd.read_csv("./Results/CAE/encoded_scae_dropout.csv", header=None)
     y_data = pd.read_csv(LOCAL_LOCATION_Y, header=None)
+
     label_encoder = LabelEncoder()
     label_encoder.fit(y_data)
     label_encoder = label_encoder.transform(y_data)
-    y_data = keras.utils.to_categorical(label_encoder)
+    y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
 
-    mi_f_d = pd.read_csv('../Results/MI_FD.csv', header=None)
-    top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
-    top_200_features = x_data[top_200_features_indices]
+    print(x_data.shape, y_data.shape)
 
-    run(0, x_data, y_data, random_selection=True)
+    # mi_f_d = pd.read_csv('../Results/MI_FD.csv', header=None)
+    # top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
+    # top_200_features = x_data[top_200_features_indices]
+
+    run(0.5, x_data, y_data, random_selection=False)
     print("Finished")
     # np.savetxt("./decoder.csv", layer_out, delimiter=",")
-
-
