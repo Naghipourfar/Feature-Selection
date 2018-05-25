@@ -9,6 +9,8 @@ from keras.models import Model
 from keras.callbacks import ModelCheckpoint, Callback
 
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
 """
     Created by Mohsen Naghipourfar on 3/26/18.
     Email : mn7697np@gmail.com
@@ -150,21 +152,21 @@ def run(stddev, x_data, y_data, random_selection=True):
     # return layer_output
 
 
-# if __name__ == '__main__':
-#
-    # # Load Data
-    # x_data = pd.read_csv(LOCAL_LOCATION_X, header=None)
-    # y_data = pd.read_csv(LOCAL_LOCATION_Y, header=None)
-    # y_data = pd.DataFrame(modify_output(y_data))
-    # y_data = pd.DataFrame(keras.utils.to_categorical(y_data, num_classes=N_DISEASES))
-    # # for i in range(1000):
-    # #     for stddev in [0.1, 0.05, 0.01]:
-    #
-    # mi_f_d = pd.read_csv('../Results/MI_FD.csv', header=None)
-    # top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
-    # top_200_features = x_data[top_200_features_indices]
-    #
-    # run(0, top_200_features, y_data, random_selection=False)
-    # print("Finished")
-    # # np.savetxt("./decoder.csv", layer_out, delimiter=",")
+if __name__ == '__main__':
+
+    # Load Data
+    x_data = pd.read_csv(LOCAL_LOCATION_X, header=None)
+    y_data = pd.read_csv(LOCAL_LOCATION_Y, header=None)
+    label_encoder = LabelEncoder()
+    label_encoder.fit(y_data)
+    label_encoder = label_encoder.transform(y_data)
+    y_data = keras.utils.to_categorical(label_encoder)
+
+    mi_f_d = pd.read_csv('../Results/MI_FD.csv', header=None)
+    top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
+    top_200_features = x_data[top_200_features_indices]
+
+    run(0, x_data, y_data, random_selection=True)
+    print("Finished")
+    # np.savetxt("./decoder.csv", layer_out, delimiter=",")
 
