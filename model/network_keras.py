@@ -42,23 +42,6 @@ neurons = {
 }
 
 
-def modify_output(target):
-    global N_DISEASES
-    output_dict = {}
-    a = target[0].value_counts()
-    # print(a)
-    a = pd.DataFrame(a)
-    i = 0
-    for row in a.itertuples():
-        output_dict[row[0]] = i
-        i += 1
-    N_DISEASES = i
-    new_output = [0 for _ in range(N_SAMPLES)]
-    for idx, y in target.iterrows():
-        new_output[idx] = output_dict[y[0]]
-    return new_output
-
-
 def run(stddev, x_data, y_data, random_selection=True):
     # Train/Test Split
     x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.20)
