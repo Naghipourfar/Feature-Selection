@@ -4,7 +4,7 @@ import os, sys
 
 import keras
 import keras.backend as K
-from keras.layers import Input, Dense, Dropout, GaussianNoise
+from keras.layers import Input, Dense, Dropout, GaussianNoise, BatchNormalization
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint, Callback
 
@@ -58,19 +58,19 @@ def run(stddev, x_data, y_data, random_selection=True):
     noise_layer = GaussianNoise(stddev)(input_layer)
 
     l1 = Dense(neurons['l1'], activation='relu')(noise_layer)
-
+    l1 = BatchNormalization()(l1)
     l1_dropout = Dropout(DROP_OUT)(l1)
 
     l2 = Dense(neurons['l2'], activation='relu')(l1_dropout)
-
+    l2 = BatchNormalization()(l2)
     l2_dropout = Dropout(DROP_OUT)(l2)
 
     l3 = Dense(neurons['l3'], activation='relu')(l2_dropout)
-
+    l3 = BatchNormalization()(l3)
     l3_dropout = Dropout(DROP_OUT)(l3)
 
     l4 = Dense(neurons['l4'], activation='relu')(l3_dropout)
-
+    l4 = BatchNormalization()(l4)
     l4_dropout = Dropout(DROP_OUT)(l4)
 
     output_layer = Dense(neurons['out'], activation='softmax')(l4_dropout)
@@ -110,7 +110,7 @@ def run(stddev, x_data, y_data, random_selection=True):
                 shuffle=True,
                 validation_data=(x_test.as_matrix(), y_test.as_matrix()),
                 callbacks=[checkpointer],
-                verbose=1)
+                verbose=2)
     # layer_output.append(get_3rd_layer_output([x_train, True])[0])
     # print(layer_output)
 
@@ -138,19 +138,15 @@ def run(stddev, x_data, y_data, random_selection=True):
 if __name__ == '__main__':
     # Load Data
     x_data = pd.read_csv("./Results/CAE/encoded_scae_dropout.csv", header=None)
-    y_data = pd.read_csv(LOCAL_LOCATION_Y, header=None)
+    y_data = pd.read_csv("./Results/CAE/categorical_disease_scae_dropout.csv", header=None)
 
-    label_encoder = LabelEncoder()
-    label_encoder.fit(y_data)
-    label_encoder = label_encoder.transform(y_data)
-    y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
+    # label_encoder = LabelEncoder()
+    # label_encoder.fit(y_data)
+    # label_encoder = label_encoder.transform(y_data)
+    # y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
 
     print(x_data.shape, y_data.shape)
 
-    # mi_f_d = pd.read_csv('../Results/MI_FD.csv', header=None)
-    # top_200_features_indices = mi_f_d.sort_values(by=[0], ascending=False).index[0:200]
-    # top_200_features = x_data[top_200_features_indices]
-
-    run(0.5, x_data, y_data, random_selection=False)
+    run(0.01, x_data, y_data, random_selection=False)
     print("Finished")
     # np.savetxt("./decoder.csv", layer_out, delimiter=",")

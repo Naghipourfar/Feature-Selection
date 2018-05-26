@@ -49,7 +49,7 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
     # m_rna_noisy = m_rna + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=m_rna.shape)
 
     indices = np.arange(m_rna.shape[0])
-    indices = indices[0:10750]
+    indices = indices[0:10787]
     np.random.shuffle(indices)
 
     m_rna = m_rna[indices]
@@ -57,10 +57,10 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
     categorical_disease = categorical_disease[indices]
 
     m_rna_train = m_rna[0:9750, ]
-    m_rna_test = m_rna[9750:10750, ]
+    m_rna_test = m_rna[9750:10787, ]
 
     categorical_disease_train = categorical_disease[0:9750, ]
-    categorical_disease_test = categorical_disease[9750: 10750, ]
+    categorical_disease_test = categorical_disease[9750: 10787, ]
 
     print("data loading has just been finished")
 
@@ -155,9 +155,6 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
 
     data_pred = model.predict(m_rna, batch_size=batch_size, verbose=2)
     np.savetxt(X=m_rna, fname=result_folder + "tcga_genes_scae_dropout.csv", delimiter=",", fmt='%1.3f')
-    # np.savetxt(X=mi_rna, fname=result_folder + "micro_rna_scae_dropout.csv", delimiter=",", fmt='%1.3f')
-    # np.savetxt(X=categorical_tissue, fname=result_folder + "categorical_tissue_scae_dropout.csv", delimiter=",",
-    #            fmt='%1.3f')
     np.savetxt(X=categorical_disease, fname=result_folder + "categorical_disease_scae_dropout.csv", delimiter=",",
                fmt='%1.3f')
 
@@ -171,7 +168,7 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
         dropout_factor = 1 - np.divide(i, 100)
         dropout_matrix = np.random.binomial(n=1, p=dropout_factor, size=m_rna.shape)
         m_rna_dropout = np.multiply(m_rna, dropout_matrix)
-        m_rna_temp_test = m_rna_dropout[9750:10750, ]
+        m_rna_temp_test = m_rna_dropout[9750:10787, ]
         # score = model.evaluate(m_rna_temp_test,
         #                        [m_rna_temp_test, mi_rna_test, categorical_tissue_test, categorical_disease_test],
         #                        verbose=0, batch_size=batch_size)
@@ -191,7 +188,7 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
         noise_factor = np.divide(i, 100)
         noise_matrix = noise_factor * np.random.normal(loc=0.0, scale=1.0, size=m_rna.shape)
         m_rna_noisy = m_rna + noise_matrix
-        m_rna_temp_test = m_rna_noisy[9750:10750, ]
+        m_rna_temp_test = m_rna_noisy[9750:10787, ]
         # score = model.evaluate(m_rna_temp_test,
         #                        [m_rna_temp_test, mi_rna_test, categorical_tissue_test, categorical_disease_test],
         #                        verbose=0, batch_size=batch_size)
