@@ -149,7 +149,19 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
     layer_name = "encoded"
     encoded_layer_model = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
     encoded_output = encoded_layer_model.predict(df_m_rna)
+
     np.savetxt(X=encoded_output, fname=result_folder + "encoded_scae_dropout.csv", delimiter=",")
+
+    noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=1.0, size=encoded_output.shape)
+    np.savetxt(X=encoded_output+noise_matrix, fname=result_folder + "encoded_scae_dropout_noised_1.csv", delimiter=",")
+
+    noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=0.5, size=encoded_output.shape)
+    np.savetxt(X=encoded_output + noise_matrix, fname=result_folder + "encoded_scae_dropout_noised_0.5.csv",
+               delimiter=",")
+
+    noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=0.01, size=encoded_output.shape)
+    np.savetxt(X=encoded_output + noise_matrix, fname=result_folder + "encoded_scae_dropout_noised_0.01.csv",
+               delimiter=",")
 
     # save the result and prediction value
 
