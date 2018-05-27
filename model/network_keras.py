@@ -197,7 +197,7 @@ def learn_code_layer(stddev=0.0, x_data=None, y_data=None, n_features=10, random
     with open(LOCAL_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
         writer = csv.writer(file)
         score = model.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
-        writer.writerow(score)
+        writer.writerow([score])
 
 
 if __name__ == '__main__':
