@@ -2,15 +2,11 @@ import numpy as np
 import pandas as pd
 import os, sys
 
-import keras
-import keras.backend as K
 from keras.layers import Input, Dense, Dropout, GaussianNoise, BatchNormalization
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint, CSVLogger
-from keras import backend as K
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 
 """
     Created by Mohsen Naghipourfar on 3/26/18.
