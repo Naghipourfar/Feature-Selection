@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import os, sys
+import os
 
 from keras.layers import Input, Dense, Dropout, GaussianNoise, BatchNormalization
 from keras.models import Model
