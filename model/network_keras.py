@@ -34,7 +34,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 256
-N_EPOCHS = 10
+N_EPOCHS = 200
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
@@ -194,16 +194,17 @@ def learn_code_layer(stddev=0.0, x_data=None, y_data=None, n_features=10, random
               validation_data=(x_test.as_matrix(), y_test.as_matrix()),
               verbose=2)
     import csv
-    with open(LOCAL_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
+    with open(DAMAVAND_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
         writer = csv.writer(file)
         score = model.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
-        writer.writerow([score])
+        print('score is ' ,score)
+        writer.writerow([float(score)])
 
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
-    y_data = pd.read_csv(LOCAL_LOCATION_ENCODED, header=None)
+    x_data = pd.read_csv(DAMAVAND_LOCATION_FPKM_NORMALIZED, header=None)
+    y_data = pd.read_csv(DAMAVAND_LOCATION_ENCODED, header=None)
 
     noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
     y_data += noise_matrix
@@ -214,8 +215,8 @@ if __name__ == '__main__':
     # y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
 
     print(x_data.shape, y_data.shape)
-    for n_features in [2, 4, 8, 16, 32, 64, 128, 256, 512]:
-        for i in range(100):
-            learn_code_layer(0.01, x_data, y_data, n_features=n_features, random_selection=True, seed=2018 * i)
+    for i in range(1000):
+        for n_features in [2, 4, 8, 16, 32, 64, 128, 256, 512]:
+            learn_code_layer(0.01, x_data, y_data, n_features=n_features, random_selection=True, seed=2018 * n_features)
 
     print("Finished")
