@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 
+from keras import backend as K
 from keras.layers import Input, Dense, Dropout, GaussianNoise, BatchNormalization
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint, CSVLogger
