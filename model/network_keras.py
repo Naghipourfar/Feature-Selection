@@ -42,7 +42,8 @@ neurons = {
     'l3': 256,
     'l4': 128,
     'out': N_DISEASES,
-    'code': 12
+    'code': 12,
+    'features': N_FEATURES
 }
 
 
