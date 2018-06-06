@@ -7,6 +7,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+runs_data <- data.frame(MSE=c(0.0), SD=c(0.0)) # initialize variables
 ```
 
 ## Data Analysis
@@ -16,24 +17,39 @@ The following graphs are Density plots for MSE loss of model when K = 2, 4, 8, 1
 ```{r mohsen, echo=FALSE}
 library(readr)
 library(ggplot2)
-data <- data.frame()
 distplot <- function(k) {
   file_name <- paste(c("/Users/Future/Desktop/Spring 2018/Projects/Bioinformatics/Feature Selection/model/Results/CAE/Damavand/encoded_results_0.01_", k, ".csv"), collapse = '')
   plot_title <- paste(c("Distribution Plot (K = ", k, ")"), collapse = '')
-  mse_loss <- read_csv(file_name, col_types = cols())
-  data <- cbind(data, k = mse_loss)
+  data <- read_csv(file_name, col_names = c("MSE"))
+  # data <- cbind(data, k = mse_loss)
   data$MSE <- as.numeric(data$MSE)
+  new_row <- data.frame(MSE=c(mean(data$MSE)), SD=c(sd(data$MSE)))
+  runs_data <- rbind(runs_data, new_row)
   # hist(x = data$MSE, breaks = 30, col = 'red', xlab = 'MSE Loss', main = 'Distribution Plot (stddev = 0.01)')
   ggplot(data, aes(MSE)) + geom_density() + xlim(0.25, 0.5)  + xlab("MSE Loss")
+  return(runs_data)
 }
-distplot(2)
-distplot(4)
-distplot(8)
-distplot(16)
-distplot(32)
-distplot(64)
-distplot(128)
-distplot(256)
-distplot(512)
+```
+
+```{r distplots, echo=FALSE}
+runs_data <- distplot(2)
+runs_data <- distplot(4)
+runs_data <- distplot(8)
+runs_data <- distplot(16)
+runs_data <- distplot(32)
+runs_data <- distplot(64)
+runs_data <- distplot(128)
+runs_data <- distplot(256)
+runs_data <- distplot(512)
+```
+
+## Error bar plot
+
+```{r errorbar, echo=FALSE}
+y <- runs_data$MSE
+sd <- runs_data$SD
+# qplot(x,y)+geom_errorbar(aes(x=x, ymin=y-sd, ymax=y+sd), width=0.25)
+qplot(x = c(0, 2, 4, 8, 16, 32, 64, 128, 256, 512), y = runs_data$MSE) + geom_errorbar(aes(ymin=y-sd, ymax=y+sd), width=0.5)
+
 ```
 
