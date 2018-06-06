@@ -45,7 +45,7 @@ def contractive_loss(y_pred, y_true):
 
 def auto_encoder(x_train, y_train):
     def create_model():
-        inputs = Input(shape=x_train.shape[1])
+        inputs = Input(shape=(x_train.shape[1], ))
         encoder_1 = Dense(1024, activation='relu', name="encoder_1")(inputs)
         encoder_1 = BatchNormalization()(encoder_1)
         encoder_1 = Dropout(0.0)(encoder_1)
