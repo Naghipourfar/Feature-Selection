@@ -7,7 +7,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-runs_data <- data.frame(MSE=c(0.0), SD=c(0.0)) # initialize variables
+runs_data <- data.frame() # initialize variables
 ```
 
 ## Data Analysis
@@ -20,18 +20,18 @@ library(ggplot2)
 distplot <- function(k) {
   file_name <- paste(c("/Users/Future/Desktop/Spring 2018/Projects/Bioinformatics/Feature Selection/model/Results/CAE/Damavand/encoded_results_0.01_", k, ".csv"), collapse = '')
   plot_title <- paste(c("Distribution Plot (K = ", k, ")"), collapse = '')
-  data <- read_csv(file_name, col_names = c("MSE"))
+  data <- read_csv(file_name, col_names = c("MSE"), col_types = cols(col_double()))
   # data <- cbind(data, k = mse_loss)
   data$MSE <- as.numeric(data$MSE)
   new_row <- data.frame(MSE=c(mean(data$MSE)), SD=c(sd(data$MSE)))
   runs_data <- rbind(runs_data, new_row)
   # hist(x = data$MSE, breaks = 30, col = 'red', xlab = 'MSE Loss', main = 'Distribution Plot (stddev = 0.01)')
-  ggplot(data, aes(MSE)) + geom_density() + xlim(0.25, 0.5)  + xlab("MSE Loss")
+  print(ggplot(data, aes(MSE)) + geom_density() + xlim(0.25, 0.5)  + xlab("MSE Loss"))
   return(runs_data)
 }
 ```
 
-```{r distplots, echo=FALSE}
+```{r plots, echo=FALSE}
 runs_data <- distplot(2)
 runs_data <- distplot(4)
 runs_data <- distplot(8)
@@ -49,7 +49,7 @@ runs_data <- distplot(512)
 y <- runs_data$MSE
 sd <- runs_data$SD
 # qplot(x,y)+geom_errorbar(aes(x=x, ymin=y-sd, ymax=y+sd), width=0.25)
-qplot(x = c(0, 2, 4, 8, 16, 32, 64, 128, 256, 512), y = runs_data$MSE) + geom_errorbar(aes(ymin=y-sd, ymax=y+sd), width=0.5)
+qplot(x = c(2, 4, 8, 16, 32, 64, 128, 256, 512), y = runs_data$MSE, xlab = "Number of selected features", ylab = "MSE") + geom_errorbar(aes(ymin=y-sd, ymax=y+sd), width=5)
 
 ```
 

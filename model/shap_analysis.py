@@ -45,22 +45,22 @@ def contractive_loss(y_pred, y_true):
 
 def auto_encoder(x_train, y_train):
     def create_model():
-        inputs = Input(shape=(x_train.shape[1], ))
+        inputs = Input(shape=(x_train.shape[1],))
         encoder_1 = Dense(1024, activation='relu', name="encoder_1")(inputs)
         encoder_1 = BatchNormalization()(encoder_1)
         encoder_1 = Dropout(0.0)(encoder_1)
 
-        encoder_2 = Dense(256, activation='relu', name="encoder_2")(encoder_1)
-        encoder_2 = BatchNormalization()(encoder_2)
-        encoder_2 = Dropout(0.25)(encoder_2)
+        # encoder_2 = Dense(256, activation='relu', name="encoder_2")(encoder_1)
+        # encoder_2 = BatchNormalization()(encoder_2)
+        # encoder_2 = Dropout(0.25)(encoder_2)
 
-        code = Dense(12, activation='relu', name='code')(encoder_2)
+        code = Dense(12, activation='relu', name='code')(encoder_1)
 
-        decoder_2 = Dense(256, activation='relu', name="decoder_2")(code)
-        decoder_2 = BatchNormalization()(decoder_2)
-        decoder_2 = Dropout(0.0)(decoder_2)
+        # decoder_2 = Dense(256, activation='relu', name="decoder_2")(code)
+        # decoder_2 = BatchNormalization()(decoder_2)
+        # decoder_2 = Dropout(0.0)(decoder_2)
 
-        decoder_3 = Dense(1024, activation='relu', name="decoder_3")(decoder_2)
+        decoder_3 = Dense(1024, activation='relu', name="decoder_3")(code)
         decoder_3 = BatchNormalization()(decoder_3)
         decoder_3 = Dropout(0.0)(decoder_3)
 
@@ -83,9 +83,25 @@ def auto_encoder(x_train, y_train):
 
     model.save('./AE.h5')
 
+    return model
+
+
+def analyze_with_shap(model, x_train):
+    def f(X):
+        return model.predict(X)
+
+    shap.initjs()
+    explainer = shap.KernelExplainer(f, x_train.iloc[:, :])
+    shap_values = explainer.shap_values(x_train.iloc[50, :], nsamples=100)
+    shap_values = np.array(shap_values)
+    np.savetxt(X=shap_values, fname='./shap_values.csv', delimiter=',')
+    plt.figure()
+    shap.summary_plot(shap_values, x_train.iloc[50, :], show=False)
+    plt.savefig("./summary_plot.png")
+
 
 if __name__ == '__main__':
-    # model = load_model()
-    x_train = pd.read_csv('../Data/fpkm_normalized.csv', header=None)
-    # analyze_with_shap(model, x_train, y_train)
-    auto_encoder(x_train, x_train)
+    # model = load_model('./AE.h5')
+    x_train = pd.read_csv('~/f/Behrooz/dataset_local/fpkm_normalized.csv', header=None)
+    model = auto_encoder(x_train, x_train)
+    analyze_with_shap(model, x_train)
