@@ -193,7 +193,7 @@ def learn_code_layer(stddev=0.0, x_data=None, y_data=None, n_features=10, random
               validation_data=(x_test.as_matrix(), y_test.as_matrix()),
               verbose=2)
     import csv
-    with open(DAMAVAND_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
+    with open(LOCAL_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
         writer = csv.writer(file)
         score = model.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
         print('score is ', score)
@@ -202,8 +202,8 @@ def learn_code_layer(stddev=0.0, x_data=None, y_data=None, n_features=10, random
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(DAMAVAND_LOCATION_FPKM_NORMALIZED, header=None)
-    y_data = pd.read_csv(DAMAVAND_LOCATION_ENCODED, header=None)
+    x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
+    y_data = pd.read_csv(LOCAL_LOCATION_ENCODED, header=None)
 
     noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
     y_data += noise_matrix
