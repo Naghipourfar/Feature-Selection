@@ -10,6 +10,7 @@ import keras.backend as backend
 from keras.layers import Input, Dense, Dropout, BatchNormalization
 from keras.models import Model
 
+import matplotlib.pyplot as plt
 """
     Created by Mohsen Naghipourfar on 6/6/18.
     Email : mn7697np@gmail.com
@@ -101,7 +102,16 @@ def analyze_with_shap(model, x_train):
 
 
 if __name__ == '__main__':
-    # model = load_model('./AE.h5')
+    model = load_model('./AE.h5')
     x_train = pd.read_csv('~/f/Behrooz/dataset_local/fpkm_normalized.csv', header=None)
-    model = auto_encoder(x_train, x_train)
-    analyze_with_shap(model, x_train)
+
+    print("Data and model loaded!")
+    # model = auto_encoder(x_train, x_train)
+    # analyze_with_shap(model, x_train)
+    shap_values = pd.read_csv('./shap_values.csv', header=None)
+    print("Shap Values loaded!")
+    print(shap_values.shape)
+    plt.figure()
+    shap.summary_plot(shap_values, x_train.iloc[50, :], show=False)
+    plt.savefig("./summary_plot.png")
+    print("Finished")
