@@ -23,7 +23,7 @@ DAMAVAND_RESULTS_ENCODED = '../Results/CAE/encoded_results_{0}_{1}.csv'
 LOCAL_LOCATION_FPKM_NORMALIZED = "../Data/fpkm_normalized.csv"
 LOCAL_LOCATION_CATEGORICAL_DISEASE = "../Data/disease.csv"
 LOCAL_LOCATION_ENCODED = "./Results/CAE/old/encoded_scae_dropout.csv"
-LOCAL_RESULTS_ENCODED = './Results/CAE/encoded_results_{0}_{1}.csv'
+LOCAL_RESULTS_ENCODED = './Results/CAE/encoded_results_{0}_{1}_notNoised.csv'
 
 # Hyper-Parameters
 LEARNING_RATE = 1e-3
@@ -142,11 +142,11 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
 
 
 def learn_code_layer(stddev=0.0, x_data=None, y_data=None, n_features=10, random_selection=False, seed=2018):
-    noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=stddev, size=y_data.shape)
+    # noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=stddev, size=y_data.shape)
 
-    y_data_noised = y_data + noise_matrix
+    # y_data_noised = y_data + noise_matrix
     # Train/Test Split
-    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data_noised, test_size=0.30, shuffle=True)
+    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.30, shuffle=True)
 
     # Random Feature Selection
     if random_selection:
@@ -193,7 +193,7 @@ def learn_code_layer(stddev=0.0, x_data=None, y_data=None, n_features=10, random
               validation_data=(x_test.as_matrix(), y_test.as_matrix()),
               verbose=2)
     import csv
-    with open(LOCAL_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
+    with open(DAMAVAND_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
         writer = csv.writer(file)
         score = model.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
         print('score is ', score)
@@ -202,10 +202,10 @@ def learn_code_layer(stddev=0.0, x_data=None, y_data=None, n_features=10, random
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
-    y_data = pd.read_csv(LOCAL_LOCATION_ENCODED, header=None)
+    x_data = pd.read_csv(DAMAVAND_LOCATION_FPKM_NORMALIZED, header=None)
+    y_data = pd.read_csv(DAMAVAND_LOCATION_ENCODED, header=None)
 
-    noise_matrix = 0.5 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
+    noise_matrix = 0.0 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
     y_data += noise_matrix
 
     # label_encoder = LabelEncoder()
@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
     print(x_data.shape, y_data.shape)
     for i in range(1000):
-        for n_features in [2, 4, 8, 16, 32, 64, 128, 256, 512]:
+        for n_features in reversed([2, 4, 8, 16, 32, 64, 128, 256, 512]):
             learn_code_layer(0.01, x_data, y_data, n_features=n_features, random_selection=True, seed=2018 * n_features)
 
     print("Finished")
