@@ -11,6 +11,7 @@ from keras.layers import Input, Dense, Dropout, BatchNormalization
 from keras.models import Model
 
 import matplotlib.pyplot as plt
+
 """
     Created by Mohsen Naghipourfar on 6/6/18.
     Email : mn7697np@gmail.com
@@ -87,6 +88,36 @@ def auto_encoder(x_train, y_train):
     return model
 
 
+def decoder(x_train, y_train):
+    def create_model():
+        inputs = Input(shape=(x_train.shape[1],), name='code')
+
+        decoder_1 = Dense(1024, activation='relu', name="decoder_1")(inputs)
+        decoder_1 = BatchNormalization()(decoder_1)
+        decoder_1 = Dropout(0.0)(decoder_1)
+
+        decoder = Dense(y_train.shape[1], activation='relu', name="output")(decoder_1)
+
+        model = Model(inputs=inputs, outputs=decoder)
+
+        model.compile(optimizer='nadam', loss=keras.losses.mse)
+
+        return model
+
+    model = create_model()
+
+    model.fit(x=x_train,
+              y=y_train,
+              epochs=250,
+              batch_size=256,
+              validation_split=0.25,
+              verbose=2)
+
+    model.save('./Dec.h5')
+
+    return model
+
+
 def analyze_with_shap(model, x_train):
     def f(X):
         return model.predict(X)
@@ -102,11 +133,11 @@ def analyze_with_shap(model, x_train):
 
 
 if __name__ == '__main__':
-    model = load_model('./AE.h5')
+    # model = load_model('./AE.h5')
     x_train = pd.read_csv('~/f/Behrooz/dataset_local/fpkm_normalized.csv', header=None)
-
+    code_layer = pd.read_csv("./")
     print("Data and model loaded!")
-    # model = auto_encoder(x_train, x_train)
+    model = decoder(code_layer, x_train)
     # analyze_with_shap(model, x_train)
     shap_values = pd.read_csv('./shap_values.csv', header=None)
     print("Shap Values loaded!")
