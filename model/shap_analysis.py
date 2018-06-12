@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 """
 
 
+machine = 'local'
+
 def load_model(path="./Results/CAE/old/scae-dropout.h5"):
     model = keras.models.load_model(path, custom_objects={'contractive_loss': contractive_loss})
     model.summary()
@@ -108,7 +110,7 @@ def decoder(x_train, y_train):
 
     model.fit(x=x_train,
               y=y_train,
-              epochs=250,
+              epochs=10,
               batch_size=256,
               validation_split=0.25,
               verbose=2)
@@ -133,10 +135,13 @@ def analyze_with_shap(model, x_train):
 
 
 if __name__ == '__main__':
-    # model = load_model('./AE.h5')
-    x_train = pd.read_csv('~/f/Behrooz/dataset_local/fpkm_normalized.csv', header=None)
-    code_layer = pd.read_csv("../Data/encoded_scae_dropout.csv", header=None)
-    print("Data and model loaded!")
+    if machine == 'damavand':
+        x_train = pd.read_csv('~/f/Behrooz/dataset_local/fpkm_normalized.csv', header=None)
+        code_layer = pd.read_csv("../Data/encoded_scae_dropout.csv", header=None)
+    else:
+        x_train = pd.read_csv('../Data/fpkm_normalized.csv', header=None)
+        code_layer = pd.read_csv("./Results/CAE/old/encoded_scae_dropout.csv", header=None)
+    print("Data has been loaded!")
     model = decoder(code_layer, x_train)
 
     analyze_with_shap(model, code_layer)
