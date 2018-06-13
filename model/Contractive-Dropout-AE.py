@@ -22,7 +22,7 @@ DAMAVAND_LOCATION_X = "/s/chopin/a/grad/asharifi/f/Behrooz/dataset_local/fpkm_no
 DAMAVAND_LOCATION_Y = "/s/chopin/a/grad/asharifi/f/Behrooz/dataset_local/disease.csv"
 
 
-def contractive_dropout_autoencoder(machine_name, local_data_folder, local_result_folder, model_specific, seed=2018):
+def contractive_dropout_autoencoder(machine_name, local_data_folder, local_result_folder, model_specific, n_random_features,seed=2018):
     seed = seed
     np.random.seed(seed=seed)
 
@@ -48,11 +48,15 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
     # noise_factor = 0.05
     # m_rna_noisy = m_rna + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=m_rna.shape)
 
+    np.random.seed(seed)
+    random_feature_indices = np.random.choice(19671, n_random_features, replace=False)
+
     indices = np.arange(m_rna.shape[0])
     indices = indices[0:10787]
     np.random.shuffle(indices)
 
     m_rna = m_rna[indices]
+    m_rna = m_rna[:, random_feature_indices]
 
     categorical_disease = categorical_disease[indices]
 
@@ -216,7 +220,7 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
     print("gaussian has just been finished")
 
 
-contractive_dropout_autoencoder(machine_name=machine, local_data_folder=local_dataset_folder,
-                                local_result_folder=local_results_folder, model_specific=model_spec)
+# contractive_dropout_autoencoder(machine_name=machine, local_data_folder=local_dataset_folder,
+#                                 local_result_folder=local_results_folder, model_specific=model_spec)
 
 print("run has just been finished")
