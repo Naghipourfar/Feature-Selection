@@ -1,3 +1,4 @@
+import keras
 import numpy as np
 import pandas as pd
 import os
@@ -34,7 +35,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 256
-N_EPOCHS = 200
+N_EPOCHS = 150
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
@@ -61,7 +62,7 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
         x_test = x_test[random_feature_indices]
 
     # Design Model
-    input_layer = Input(shape=(neurons['in'],))
+    input_layer = Input(shape=(x_train.shape[1],))
 
     noise_layer = GaussianNoise(stddev)(input_layer)
 
@@ -89,17 +90,17 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
     network.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     # network.summary()
-    if not os._exists('./Results/Keras/{0}_{1}/'.format(os.getpid(), stddev)):
-        os.makedirs('./Results/Keras/{0}_{1}/'.format(os.getpid(), stddev))
-    save_path = './Results/Keras/{0}_{1}/'.format(os.getpid(), stddev) + 'model.{epoch:02d}-{val_acc:.4f}.hdf5'
+    # if not os._exists('./Results/Keras/{0}_{1}/'.format(os.getpid(), stddev)):
+    #     os.makedirs('./Results/Keras/{0}_{1}/'.format(os.getpid(), stddev))
+    # save_path = './Results/Keras/{0}_{1}/'.format(os.getpid(), stddev) + 'model.{epoch:02d}-{val_acc:.4f}.hdf5'
 
     # Create a Callback for Model
-    checkpointer = ModelCheckpoint(filepath=save_path,
-                                   verbose=0,
-                                   monitor='val_acc',
-                                   save_best_only=True,
-                                   mode='auto',
-                                   period=1)
+    # checkpointer = ModelCheckpoint(filepath=save_path,
+    #                                verbose=0,
+    #                                monitor='val_acc',
+    #                                save_best_only=True,
+    #                                mode='auto',
+    #                                period=1)
 
     # get_3rd_layer_output = K.function([network.layers[0].input, K.learning_phase()],
     #                                   [network.layers[3].output])
@@ -111,14 +112,24 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
     # Train Model
 
     # for epoch in range(N_EPOCHS):
+    # network.fit(x=x_train.as_matrix(),
+    #             y=y_train.as_matrix(),
+    #             epochs=N_EPOCHS,
+    #             batch_size=N_BATCHES,
+    #             shuffle=True,
+    #             validation_data=(x_test.as_matrix(), y_test.as_matrix()),
+    #             callbacks=[checkpointer],
+    #             verbose=2)
     network.fit(x=x_train.as_matrix(),
-                y=y_train.as_matrix(),
-                epochs=N_EPOCHS,
-                batch_size=N_BATCHES,
-                shuffle=True,
-                validation_data=(x_test.as_matrix(), y_test.as_matrix()),
-                callbacks=[checkpointer],
-                verbose=2)
+                    y=y_train.as_matrix(),
+                    epochs=N_EPOCHS,
+                    batch_size=N_BATCHES,
+                    shuffle=True,
+                    validation_data=(x_test.as_matrix(), y_test.as_matrix()),
+                    verbose=2)
+
+    network.save("./classifier.h5")
+
     # layer_output.append(get_3rd_layer_output([x_train, True])[0])
     # print(layer_output)
 
@@ -127,11 +138,11 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
     # print("*" * 100)
 
     # Save Accuracy, Loss
-    import csv
-    with open('./result_noised_{0}.csv'.format(stddev), 'a') as file:
-        writer = csv.writer(file)
-        loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
-        writer.writerow([accuracy, loss])
+    # import csv
+    # with open('./result_noised_{0}.csv'.format(stddev), 'a') as file:
+    #     writer = csv.writer(file)
+    #     loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
+    #     writer.writerow([accuracy, loss])
 
     # class DummyCheckpoint(Callback):
     #     def on_train_begin(self, logs=None):
@@ -422,23 +433,25 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
 if __name__ == '__main__':
     # Load Data
     x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
-    # y_data = pd.read_csv(DAMAVAND_LOCATION_ENCODED, header=None)
+    y_data = pd.read_csv(LOCAL_LOCATION_CATEGORICAL_DISEASE, header=None)
 
     # noise_matrix = 0.0 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
     # y_data += noise_matrix
 
-    # label_encoder = LabelEncoder()
-    # label_encoder.fit(y_data)
-    # label_encoder = label_encoder.transform(y_data)
-    # y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
+    label_encoder = LabelEncoder()
+    label_encoder.fit(y_data)
+    label_encoder = label_encoder.transform(y_data)
+    y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
 
     # print(x_data.shape, y_data.shape)
-    for i in range(1000):
-        for n_features in reversed([2, 4, 8, 16, 32, 64, 128, 256, 512]):
-            auto_encoder(0.01, x_data, x_data, n_features=n_features, random_selection=True, seed=2018 * n_features)
+    # for i in range(1000):
+    #     for n_features in reversed([2, 4, 8, 16, 32, 64, 128, 256, 512]):
+    #         auto_encoder(0.01, x_data, x_data, n_features=n_features, random_selection=True, seed=2018 * n_features)
             # contractive_dropout_autoencoder(machine_name="damavand",
             #                                 local_data_folder=DAMAVAND_LOCATION_FPKM_NORMALIZED,
             #                                 local_result_folder="../Results/", model_specific="optimal_",
             #                                 n_random_features=n_features, seed=2018 * n_features * i)
+
+    run(0, x_data, y_data, random_selection=False)
 
     print("Finished")
