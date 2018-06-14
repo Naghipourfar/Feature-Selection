@@ -6,7 +6,7 @@ import os
 from keras import backend as K
 from keras.layers import Input, Dense, Dropout, GaussianNoise, BatchNormalization, GaussianDropout
 import keras.backend as backend
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, CSVLogger, History
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, normalize
@@ -61,8 +61,10 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
         x_train = x_train[random_feature_indices]
         x_test = x_test[random_feature_indices]
 
+    network = Sequential()
     # Design Model
     input_layer = Input(shape=(x_train.shape[1],))
+    network.add(input_layer)
 
     noise_layer = GaussianNoise(stddev)(input_layer)
 
@@ -85,7 +87,7 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
     output_layer = Dense(neurons['out'], activation='softmax')(l4_dropout)
 
     # Compile Model
-    network = Model(input_layer, output_layer)
+    # network = Model(input_layer, output_layer)
 
     network.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -432,8 +434,8 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
-    y_data = pd.read_csv(LOCAL_LOCATION_CATEGORICAL_DISEASE, header=None)
+    x_data = pd.read_csv(DAMAVAND_LOCATION_FPKM_NORMALIZED, header=None)
+    y_data = pd.read_csv(DAMAVAND_LOCATION_CATEGORICAL_DISEASE, header=None)
 
     # noise_matrix = 0.0 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
     # y_data += noise_matrix
