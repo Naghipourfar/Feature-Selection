@@ -25,7 +25,7 @@ DAMAVAND_RESULTS_ENCODED = '../Results/CAE/encoded_results_{0}_{1}.csv'
 LOCAL_LOCATION_FPKM_NORMALIZED = "../Data/fpkm_normalized.csv"
 LOCAL_LOCATION_CATEGORICAL_DISEASE = "../Data/disease.csv"
 LOCAL_LOCATION_ENCODED = "./Results/CAE/old/encoded_scae_dropout.csv"
-LOCAL_RESULTS_ENCODED = './Results/CAE/encoded_results_{0}_{1}_notNoised.csv'
+LOCAL_RESULTS_ENCODED = './Results/CAE/encoded_results_{0}_{1}_Noised.csv'
 
 # Hyper-Parameters
 LEARNING_RATE = 1e-3
@@ -388,6 +388,7 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
         l4_dropout = Dropout(DROP_OUT)(l4)
 
         encoded = Dense(neurons['code'], activation='sigmoid')(l4_dropout)
+        encoded = GaussianNoise(0.025)(encoded)
 
         inputs_5 = Dense(512, activation="linear")(encoded)
         inputs_5 = Dropout(rate=0.25)(inputs_5)
@@ -411,7 +412,7 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
               verbose=2)
 
     import csv
-    with open(DAMAVAND_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
+    with open(LOCAL_RESULTS_ENCODED.format(stddev, n_features), 'a') as file:
         writer = csv.writer(file)
         score = model.evaluate(x_test_random.as_matrix(), y_test.as_matrix(), verbose=0)
         print('score is ', score)
@@ -420,7 +421,7 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(DAMAVAND_LOCATION_FPKM_NORMALIZED, header=None)
+    x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
     # y_data = pd.read_csv(DAMAVAND_LOCATION_ENCODED, header=None)
 
     # noise_matrix = 0.0 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
@@ -433,7 +434,7 @@ if __name__ == '__main__':
 
     # print(x_data.shape, y_data.shape)
     for i in range(1000):
-        for n_features in [2, 4, 8, 16, 32, 64, 128, 256, 512]:
+        for n_features in reversed([2, 4, 8, 16, 32, 64, 128, 256, 512]):
             auto_encoder(0.01, x_data, x_data, n_features=n_features, random_selection=True, seed=2018 * n_features)
             # contractive_dropout_autoencoder(machine_name="damavand",
             #                                 local_data_folder=DAMAVAND_LOCATION_FPKM_NORMALIZED,
