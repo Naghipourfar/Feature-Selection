@@ -61,33 +61,33 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
         x_train = x_train[random_feature_indices]
         x_test = x_test[random_feature_indices]
 
-    network = Sequential()
+    # network = Sequential()
     # Design Model
     input_layer = Input(shape=(x_train.shape[1],))
-    network.add(input_layer)
+    # network.add(input_layer)
 
     noise_layer = GaussianNoise(stddev)(input_layer)
 
     l1 = Dense(neurons['l1'], activation='relu')(noise_layer)
-    l1 = BatchNormalization()(l1)
+    # l1 = BatchNormalization()(l1)
     l1_dropout = Dropout(DROP_OUT)(l1)
 
     l2 = Dense(neurons['l2'], activation='relu')(l1_dropout)
-    l2 = BatchNormalization()(l2)
+    # l2 = BatchNormalization()(l2)
     l2_dropout = Dropout(DROP_OUT)(l2)
 
     l3 = Dense(neurons['l3'], activation='relu')(l2_dropout)
-    l3 = BatchNormalization()(l3)
+    # l3 = BatchNormalization()(l3)
     l3_dropout = Dropout(DROP_OUT)(l3)
 
     l4 = Dense(neurons['l4'], activation='relu')(l3_dropout)
-    l4 = BatchNormalization()(l4)
+    # l4 = BatchNormalization()(l4)
     l4_dropout = Dropout(DROP_OUT)(l4)
 
     output_layer = Dense(neurons['out'], activation='softmax')(l4_dropout)
 
     # Compile Model
-    # network = Model(input_layer, output_layer)
+    network = Model(input_layer, output_layer)
 
     network.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -130,7 +130,7 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
                     validation_data=(x_test.as_matrix(), y_test.as_matrix()),
                     verbose=2)
 
-    network.save("./classifier.h5")
+    network.save("./classifier-noBatchNorm.h5")
 
     # layer_output.append(get_3rd_layer_output([x_train, True])[0])
     # print(layer_output)
@@ -434,8 +434,8 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(DAMAVAND_LOCATION_FPKM_NORMALIZED, header=None)
-    y_data = pd.read_csv(DAMAVAND_LOCATION_CATEGORICAL_DISEASE, header=None)
+    x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
+    y_data = pd.read_csv(LOCAL_LOCATION_CATEGORICAL_DISEASE, header=None)
 
     # noise_matrix = 0.0 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
     # y_data += noise_matrix
