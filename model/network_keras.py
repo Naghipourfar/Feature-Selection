@@ -26,7 +26,7 @@ DAMAVAND_RESULTS_ENCODED = '../Results/CAE/encoded_results_{0}_{1}.csv'
 LOCAL_LOCATION_FPKM_NORMALIZED = "../Data/fpkm_normalized.csv"
 LOCAL_LOCATION_CATEGORICAL_DISEASE = "../Data/disease.csv"
 LOCAL_LOCATION_ENCODED = "./Results/CAE/old/encoded_scae_dropout.csv"
-LOCAL_RESULTS_ENCODED = './Results/CAE/encoded_results_{0}_{1}_Noised.csv'
+LOCAL_RESULTS_ENCODED = './Results/CAE/encoded_results_{0}_{1}_notNoised.csv'
 
 # Hyper-Parameters
 LEARNING_RATE = 1e-3
@@ -35,7 +35,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 256
-N_EPOCHS = 150
+N_EPOCHS = 30
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
@@ -66,9 +66,9 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
     input_layer = Input(shape=(x_train.shape[1],))
     # network.add(input_layer)
 
-    noise_layer = GaussianNoise(stddev)(input_layer)
+    # noise_layer = GaussianNoise(stddev)(input_layer)
 
-    l1 = Dense(neurons['l1'], activation='relu')(noise_layer)
+    l1 = Dense(neurons['l1'], activation='relu')(input_layer)
     # l1 = BatchNormalization()(l1)
     l1_dropout = Dropout(DROP_OUT)(l1)
 
@@ -130,7 +130,7 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
                     validation_data=(x_test.as_matrix(), y_test.as_matrix()),
                     verbose=2)
 
-    network.save("./classifier-noBatchNorm.h5")
+    network.save("./classifier-noBatchNorm-noGaussian.h5")
 
     # layer_output.append(get_3rd_layer_output([x_train, True])[0])
     # print(layer_output)
@@ -401,7 +401,7 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
         l4_dropout = Dropout(DROP_OUT)(l4)
 
         encoded = Dense(neurons['code'], activation='sigmoid')(l4_dropout)
-        encoded = GaussianNoise(0.025)(encoded)
+        # encoded = GaussianNoise(0.025)(encoded)
 
         inputs_5 = Dense(512, activation="linear")(encoded)
         inputs_5 = Dropout(rate=0.25)(inputs_5)
