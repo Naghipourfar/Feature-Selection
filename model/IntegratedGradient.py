@@ -191,22 +191,3 @@ class integrated_gradients:
             ret[s] = reference + (sample - reference) * (s * 1.0 / num_steps)
 
         return ret, num_steps, (sample - reference) * (1.0 / num_steps)
-
-
-if __name__ == '__main__':
-    model = keras.models.load_model("./classifier.h5")
-    x = pd.read_csv("../Data/fpkm_normalized.csv", header=None)
-
-    ig = integrated_gradients(model)
-    feature_importances = []
-    for i in range(x.shape[0]):
-        feature_importances.append(ig.explain(x.as_matrix()[i, :]))
-        sys.stdout.write('\r')
-        sys.stdout.write("Progress: " + str((i / 10787) * 100) + " %")
-        sys.stdout.flush()
-
-    sys.stdout.write('\r')
-    sys.stdout.write("Progress: " + str((10787 / 10787) * 100) + " %")
-    sys.stdout.flush()
-
-    np.savetxt(fname="./integrated_gradients.csv", X=np.array(feature_importances), delimiter=',')

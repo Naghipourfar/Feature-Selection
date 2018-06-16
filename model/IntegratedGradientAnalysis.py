@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+import sys
+import os
+
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import keras
@@ -8,6 +11,9 @@ import keras
 from keras.layers import Input, Dense, Dropout, BatchNormalization
 from keras.models import Model
 from keras.callbacks import History, CSVLogger
+
+from IntegratedGradient import integrated_gradients
+
 
 """
     Created by Mohsen Naghipourfar on 6/15/18.
@@ -98,8 +104,9 @@ def calculate_statistical_criteria(feature_importance=None, criteria="absolute_e
         elif criteria == "relative_error":
             statistical_criteria = np.array([[(np.max(feature_importance[:, i]) - np.min(
                 feature_importance[:, i])) / (np.max(feature_importance[:, i]))]for i in range(feature_importance.shape[1])])
-        np.savetxt(fname=path + file_name, X=statistical_criteria, delimiter=",")
-        
+        np.savetxt(fname=path + file_name,
+                   X=statistical_criteria, delimiter=",")
+
 
 def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/IntegratedGradient/", save_path="../Results/IntegratedGradient/"):
     data_path = data_path + "intgrad_" + criteria + ".csv"
@@ -114,15 +121,17 @@ def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/I
     elif criteria == "relative_error":
         plt.xlabel("Relative Error")
         plt.title("Distribution of Relative Error")
-    plt.ylabel("Density") 
+    plt.ylabel("Density")
     plt.savefig(save_path)
     plt.close()
+
 
 def make_summary_data(feature_importance, path="../Results/IntegratedGradient/"):
     file_name = "summaries.csv"
     feature_importance = feature_importance
     num_features = feature_importance.shape[1]
-    all_describtions = np.zeros(shape=(num_features, 4)) # mean - std - min - max
+    all_describtions = np.zeros(
+        shape=(num_features, 4))  # mean - std - min - max
     for i in range(num_features):
         describtion = feature_importance[i].describe()
         describtion = describtion.iloc[[1, 2, 3, 7]].as_matrix()
@@ -131,6 +140,40 @@ def make_summary_data(feature_importance, path="../Results/IntegratedGradient/")
     np.savetxt(fname=path + file_name, X=all_describtions, delimiter=',')
 
 
+def compute_integrated_gradient(machine="damavand", save_path="../Results/IntegratedGradient/", verbose=1):
+    file_name = "integrated_gradient.csv"
+
+    if machine == "damavand":
+        mrna_address = "~/f/Behrooz/dataset_local/fpkm_normalized.csv"
+    else:
+        mrna_address = "../Data/fpkm_normalized.csv"
+
+    m_rna = pd.read_csv(mrna_address, header=None)
+    model = keras.models.load_model("../Results/classifier.h5")
+
+    ig = integrated_gradients(model, verbose=verbose)
+    num_samples = m_rna.shape[0]
+    num_features = m_rna.shape[1]
+
+    feature_importances = np.zeros(shape=(num_samples, num_features))
+    for i in range(num_samples):
+        feature_importances[i] = ig.explain(x.as_matrix()[i, :])
+        if verbose == 1:
+            sys.stdout.write('\r')
+            sys.stdout.write("Progress: " + str((i / 10787) * 100) + " %")
+            sys.stdout.flush()
+    if verbose == 1:
+        sys.stdout.write('\r')
+        sys.stdout.write("Progress: " + str((10787 / 10787) * 100) + " %")
+        sys.stdout.flush()
+
+    np.savetxt(fname="../Results/IntegratedGradient/integrated_gradients.csv",
+               X=np.array(feature_importances), delimiter=',')
+
+    return feature_importances
+
+
+machine = "damavand"
 
 if __name__ == '__main__':
     general_path = "../Results/IntegratedGradient/"
@@ -139,8 +182,14 @@ if __name__ == '__main__':
     summary_path = general_path + "summary.csv"
     distplot_path = general_path + "distribution.png"
 
-    feature_importance = loadGradients(path=data_path)
-    print("Data has been loaded!")
+    if os.path.exists(data_path):
+        feature_importance = loadGradients(path=data_path)
+        print("Data has been loaded!")
+    else:
+        feature_importance = compute_integrated_gradient(
+            machine=machine, save_path=data_path, verbose=1)
+        print("Data has been computed and saved!")
+
     plot_distribution(feature_importance, path=distplot_path)
     print("General Distribution has been drawn!")
 
@@ -149,10 +198,10 @@ if __name__ == '__main__':
     plot_statistical_criteria(criteria="absolute_error")
     print("Statistical Criteria AE Distribution plot has been drawn!")
 
-    calculate_statistical_criteria(None, criteria="relative_error")
-    print("Statistical Criteria RE Calculation has been finished!")
-    plot_statistical_criteria(criteria="relative_error")
-    print("Statistical Criteria RE Distribution plot has been drawn!")
+    # calculate_statistical_criteria(None, criteria="relative_error")
+    # print("Statistical Criteria RE Calculation has been finished!")
+    # plot_statistical_criteria(criteria="relative_error")
+    # print("Statistical Criteria RE Distribution plot has been drawn!")
 
     make_summary_data(feature_importance)
     print("Summary of all features has been made!")
