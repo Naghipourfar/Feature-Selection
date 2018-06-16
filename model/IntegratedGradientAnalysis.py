@@ -35,7 +35,7 @@ def analyze_top_100_features_for_each_sample(feature_importance):
         importances = list(reversed(sorted(abs(importances))))
         top_100_importances = importances[:100]
         top_importances.append(top_100_importances)
-    np.savetxt(fname="./top100.csv", X=np.array(top_importances), delimiter=',')
+    np.savetxt(fname="./top100_deeplift.csv", X=np.array(top_importances), delimiter=',')
 
 
 def plot_heatmaps(feature_importances, path="./IntegratedGradient/Heatmaps/"):
@@ -69,7 +69,12 @@ def plot_distributions(feature_importance, path="./IntegratedGradient/DistPlots/
 if __name__ == '__main__':
     feature_importance = loadGradients()
     print("Data has been loaded!")
-    # save_summaries_for_each_feature(feature_importance)
-    # plot_distributions(feature_importance)
-    # analyze_top_100_features_for_each_sample(feature_importance)
+    save_summaries_for_each_feature(feature_importance)
+    print("Summaries has been written!")
+    plot_distributions(feature_importance)
+    print("Distplots are drawn!")
+    analyze_top_100_features_for_each_sample(feature_importance)
+    print("Top100.csv is made!")
     plot_heatmaps(feature_importance)
+    print("Heatmaps are drawn!")
+    print("Finished!")
