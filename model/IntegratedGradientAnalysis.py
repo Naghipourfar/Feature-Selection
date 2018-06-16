@@ -18,7 +18,7 @@ from keras.callbacks import History, CSVLogger
 """
 
 
-def loadGradients(path="./integrated_gradients.csv"):
+def loadGradients(path="../Results/IntegratedGradient/integrated_gradients.csv"):
     return pd.read_csv(path, header=None)
 
 
@@ -118,16 +118,29 @@ def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/I
     plt.savefig(save_path)
     plt.close()
 
+def make_summary_data(feature_importance, path="../Results/IntegratedGradient/"):
+    file_name = "summaries.csv"
+    feature_importance = feature_importance
+    num_features = feature_importance.shape[1]
+    all_describtions = np.zeros(shape=(num_features, 4)) # mean - std - min - max
+    for i in range(num_features):
+        describtion = feature_importance[i].describe()
+        describtion = describtion.iloc[[1, 2, 3, 7]].as_matrix()
+        all_describtions[i] = describtion.T
+    print(all_describtions.shape)
+    np.savetxt(fname=path + file_name, X=all_describtions, delimiter=',')
+
+
 
 if __name__ == '__main__':
     general_path = "../Results/IntegratedGradient/"
 
-    data_path = "../Results/IntegratedGradient/integrated_gradients.csv"
+    data_path = general_path + "integrated_gradients.csv"
     summary_path = general_path + "summary.csv"
     distplot_path = general_path + "distribution.png"
 
-    # feature_importance = loadGradients(path=data_path)
-    # print("Data has been loaded!")
+    feature_importance = loadGradients(path=data_path)
+    print("Data has been loaded!")
     # save_summaries_for_each_feature(feature_importance)
     # print("Summaries has been written!")
     # plot_distributions(feature_importance)
@@ -138,8 +151,10 @@ if __name__ == '__main__':
     # print("Heatmaps are drawn!")
     # plot_distribution(feature_importance, path=distplot_path)
     # print("General Distribution has been drawn!")
-    calculate_statistical_criteria(None, criteria="absolute_error")
-    print("Statistical Criteria Calculation has been finished!")
-    plot_statistical_criteria(criteria="absolute_error")
-    print("Statistical Criteria Distribution plot has been drawn!")
+    # calculate_statistical_criteria(None, criteria="absolute_error")
+    # print("Statistical Criteria Calculation has been finished!")
+    # plot_statistical_criteria(criteria="absolute_error")
+    # print("Statistical Criteria Distribution plot has been drawn!")
+    make_summary_data(feature_importance)
+    print("Summary of all features has been made!")
     print("Finished!")
