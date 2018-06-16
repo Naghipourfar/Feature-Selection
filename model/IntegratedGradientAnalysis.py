@@ -35,7 +35,8 @@ def analyze_top_100_features_for_each_sample(feature_importance):
         importances = list(reversed(sorted(abs(importances))))
         top_100_importances = importances[:100]
         top_importances.append(top_100_importances)
-    np.savetxt(fname="./top100_deeplift.csv", X=np.array(top_importances), delimiter=',')
+    np.savetxt(fname="./top100_deeplift.csv",
+               X=np.array(top_importances), delimiter=',')
 
 
 def plot_heatmaps(feature_importances, path="./IntegratedGradient/Heatmaps/"):
@@ -54,7 +55,7 @@ def plot_heatmaps(feature_importances, path="./IntegratedGradient/Heatmaps/"):
         plt.close()
 
 
-def plot_distributions(feature_importance, path="./IntegratedGradient/DistPlots/"):
+def plot_distributions(feature_importance, path="../Results/IntegratedGradient/DistPlots/"):
     import seaborn as sns
     for i in range(feature_importance.shape[1]):
         plt.figure()
@@ -66,15 +67,74 @@ def plot_distributions(feature_importance, path="./IntegratedGradient/DistPlots/
         plt.close()
 
 
+def plot_distribution(feature_importance, path="../Results/IntegratedGradient/"):
+    file_name = "distribution.png"
+    feature_importance = feature_importance.as_matrix()  # Convert to numpy ndarray
+    new_shape = (feature_importance.shape[0] * feature_importance.shape[1], )
+    feature_importance = np.reshape(feature_importance, newshape=new_shape)
+
+    import seaborn as sns
+    sns.distplot(feature_importance)
+    plt.xlabel("Feature Importance")
+    plt.ylabel("Density")
+    plt.title("Distribution of all feature importances")
+    plt.savefig(path + file_name)
+    plt.close()
+
+
+def box_plot(feature_importance, path="../Results/IntegratedGradient/"):
+    pass
+
+
+def calculate_statistical_criteria(feature_importance, criteria="absolute_error", path="../Results/IntegratedGradient/"):
+    file_name = "intgrad_" + criteria + ".csv"
+    feature_importance = feature_importance.as_matrix()  # Convert to np.ndarray
+    statistical_criteria = np.zeros(shape=(feature_importance.shape[1], 1))
+    if criteria == "absolute_error":
+        statistical_criteria = np.array([[np.max(feature_importance[:, i]) - np.min(
+            feature_importance[:, i])] for i in range(feature_importance.shape[1])])
+    elif criteria == "relative_error":
+        statistical_criteria = np.array([[(np.max(feature_importance[:, i]) - np.min(
+            feature_importance[:, i])) / (np.min(feature_importance[:, i]) + 1e-7)]for i in range(feature_importance.shape[1])])
+    np.savetxt(fname=path + file_name, X=statistical_criteria, delimiter=",")
+
+
+def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/IntegratedGradient/", save_path="../Results/IntegratedGradient/"):
+    data_path = data_path + "intgrad_" + criteria + ".csv"
+    save_path = save_path + "intgrad_" + criteria + ".png"
+    statistical_criteria = pd.read_csv(data_path, header=None).as_matrix()
+
+    import seaborn as sns
+    sns.distplot(statistical_criteria)
+    plt.xlabel("Absolute Error")
+    plt.ylabel("Density")
+    plt.title("Distribution of Absolute Error")
+    plt.savefig(save_path)
+    plt.close()
+
+
 if __name__ == '__main__':
-    feature_importance = loadGradients()
+    general_path = "../Results/IntegratedGradient/"
+
+    data_path = "../Results/IntegratedGradient/integrated_gradients.csv"
+    summary_path = general_path + "summary.csv"
+    distplot_path = general_path + "distribution.png"
+
+    feature_importance = loadGradients(path=data_path)
     print("Data has been loaded!")
-    save_summaries_for_each_feature(feature_importance)
-    print("Summaries has been written!")
-    plot_distributions(feature_importance)
-    print("Distplots are drawn!")
-    analyze_top_100_features_for_each_sample(feature_importance)
-    print("Top100.csv is made!")
-    plot_heatmaps(feature_importance)
-    print("Heatmaps are drawn!")
+    # save_summaries_for_each_feature(feature_importance)
+    # print("Summaries has been written!")
+    # plot_distributions(feature_importance)
+    # print("Distplots are drawn!")
+    # analyze_top_100_features_for_each_sample(feature_importance)
+    # print("Top100.csv is made!")
+    # plot_heatmaps(feature_importance)
+    # print("Heatmaps are drawn!")
+    # plot_distribution(feature_importance, path=distplot_path)
+    # print("General Distribution has been drawn!")
+    calculate_statistical_criteria(
+        feature_importance, criteria="relative_error")
+    print("Statistical Criteria Calculation has been finished!")
+    plot_statistical_criteria(criteria="relative_error")
+    print("Statistical Criteria Distribution plot has been drawn!")
     print("Finished!")
