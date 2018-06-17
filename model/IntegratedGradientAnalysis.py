@@ -94,18 +94,17 @@ def box_plot(feature_importance, path="../Results/IntegratedGradient/"):
 
 def calculate_statistical_criteria(feature_importance=None, criteria="absolute_error", path="../Results/IntegratedGradient/"):
     file_name = "intgrad_" + criteria + ".csv"
-    if feature_importance:
-        feature_importance = feature_importance.as_matrix()  # Convert to np.ndarray
-        statistical_criteria = np.zeros(shape=(feature_importance.shape[1], 1))
-        if criteria == "absolute_error":
-            num_features = feature_importance.shape[1]
-            statistical_criteria = np.array([[np.max(feature_importance[:, i]) - np.min(
-                feature_importance[:, i])] for i in range(num_features)])
-        elif criteria == "relative_error":
-            statistical_criteria = np.array([[(np.max(feature_importance[:, i]) - np.min(
-                feature_importance[:, i])) / (np.max(feature_importance[:, i]))]for i in range(feature_importance.shape[1])])
-        np.savetxt(fname=path + file_name,
-                   X=statistical_criteria, delimiter=",")
+    feature_importance = feature_importance.as_matrix()  # Convert to np.ndarray
+    statistical_criteria = np.zeros(shape=(feature_importance.shape[1], 1))
+    if criteria == "absolute_error":
+        num_features = feature_importance.shape[1]
+        statistical_criteria = np.array([[np.max(feature_importance[:, i]) - np.min(
+            feature_importance[:, i])] for i in range(num_features)])
+    elif criteria == "relative_error":
+        statistical_criteria = np.array([[(np.max(feature_importance[:, i]) - np.min(
+            feature_importance[:, i])) / (np.max(feature_importance[:, i]))]for i in range(feature_importance.shape[1])])
+    np.savetxt(fname=path + file_name,
+                X=statistical_criteria, delimiter=",")
 
 
 def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/IntegratedGradient/", save_path="../Results/IntegratedGradient/"):
@@ -157,12 +156,14 @@ def compute_integrated_gradient(machine="damavand", save_path="../Results/Integr
 
     feature_importances = np.zeros(shape=(num_samples, num_features))
     for i in range(num_samples):
-        feature_importances[i] = ig.explain(x.as_matrix()[i, :])
+        feature_importances[i] = ig.explain(m_rna.as_matrix()[i, :])
         if verbose == 1:
+            sys.stdout.flush()
             sys.stdout.write('\r')
             sys.stdout.write("Progress: " + str((i / 10787) * 100) + " %")
             sys.stdout.flush()
     if verbose == 1:
+        sys.stdout.flush()
         sys.stdout.write('\r')
         sys.stdout.write("Progress: " + str((10787 / 10787) * 100) + " %")
         sys.stdout.flush()
@@ -170,7 +171,7 @@ def compute_integrated_gradient(machine="damavand", save_path="../Results/Integr
     np.savetxt(fname="../Results/IntegratedGradient/integrated_gradients.csv",
                X=np.array(feature_importances), delimiter=',')
 
-    return feature_importances
+    return pd.DataFrame(feature_importances)
 
 
 machine = "damavand"
@@ -193,7 +194,7 @@ if __name__ == '__main__':
     plot_distribution(feature_importance, path=distplot_path)
     print("General Distribution has been drawn!")
 
-    calculate_statistical_criteria(None, criteria="absolute_error")
+    calculate_statistical_criteria(feature_importance, criteria="absolute_error")
     print("Statistical Criteria AE Calculation has been finished!")
     plot_statistical_criteria(criteria="absolute_error")
     print("Statistical Criteria AE Distribution plot has been drawn!")
@@ -206,3 +207,4 @@ if __name__ == '__main__':
     make_summary_data(feature_importance)
     print("Summary of all features has been made!")
     print("Finished!")
+    
