@@ -102,7 +102,7 @@ def calculate_statistical_criteria(feature_importance=None, criteria="absolute_e
         statistical_criteria = np.array([[(np.max(feature_importance[:, i]) - np.min(
             feature_importance[:, i])) / (np.max(feature_importance[:, i]))]for i in range(feature_importance.shape[1])])
     np.savetxt(fname=path + file_name,
-                X=statistical_criteria, delimiter=",")
+               X=statistical_criteria, delimiter=",")
 
 
 def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/IntegratedGradient/", save_path="../Results/IntegratedGradient/"):
@@ -192,7 +192,8 @@ if __name__ == '__main__':
     plot_distribution(feature_importance, path=distplot_path)
     print("General Distribution has been drawn!")
 
-    calculate_statistical_criteria(feature_importance, criteria="absolute_error")
+    calculate_statistical_criteria(
+        feature_importance, criteria="absolute_error")
     print("Statistical Criteria AE Calculation has been finished!")
     plot_statistical_criteria(criteria="absolute_error")
     print("Statistical Criteria AE Distribution plot has been drawn!")
