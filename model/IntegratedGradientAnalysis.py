@@ -1,16 +1,14 @@
+import os
+import sys
+
+import keras
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-import sys
-import os
-
 import tensorflow as tf
-import matplotlib.pyplot as plt
-import keras
-
-from keras.layers import Input, Dense, Dropout, BatchNormalization
+from keras.callbacks import CSVLogger, History
+from keras.layers import BatchNormalization, Dense, Dropout, Input
 from keras.models import Model
-from keras.callbacks import History, CSVLogger
 
 from IntegratedGradient import integrated_gradients
 
@@ -207,4 +205,3 @@ if __name__ == '__main__':
     make_summary_data(feature_importance)
     print("Summary of all features has been made!")
     print("Finished!")
-    
