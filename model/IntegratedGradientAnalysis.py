@@ -10,6 +10,7 @@ from keras.callbacks import CSVLogger, History
 from keras.layers import BatchNormalization, Dense, Dropout, Input
 from keras.models import Model
 
+
 from .IntegratedGradient import integrated_gradients
 
 """
