@@ -10,7 +10,6 @@ from keras.callbacks import CSVLogger, History
 from keras.layers import BatchNormalization, Dense, Dropout, Input
 from keras.models import Model
 
-
 from .IntegratedGradient import integrated_gradients
 
 """
@@ -20,7 +19,6 @@ from .IntegratedGradient import integrated_gradients
     Github: https://github.com/naghipourfar
     Skype: mn7697np
 """
-
 
 
 def loadGradients(path="../Results/IntegratedGradient/integrated_gradients.csv"):
