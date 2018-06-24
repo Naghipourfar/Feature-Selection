@@ -10,8 +10,7 @@ from keras.callbacks import CSVLogger, History
 from keras.layers import BatchNormalization, Dense, Dropout, Input
 from keras.models import Model
 
-from IntegratedGradient import integrated_gradients
-
+from .IntegratedGradient import integrated_gradients
 
 """
     Created by Mohsen Naghipourfar on 6/15/18.
@@ -74,7 +73,7 @@ def plot_distributions(feature_importance, path="../Results/IntegratedGradient/D
 def plot_distribution(feature_importance, path="../Results/IntegratedGradient/"):
     file_name = "distribution.png"
     feature_importance = feature_importance.as_matrix()  # Convert to numpy ndarray
-    new_shape = (feature_importance.shape[0] * feature_importance.shape[1], )
+    new_shape = (feature_importance.shape[0] * feature_importance.shape[1],)
     feature_importance = np.reshape(feature_importance, newshape=new_shape)
 
     import seaborn as sns
@@ -90,7 +89,8 @@ def box_plot(feature_importance, path="../Results/IntegratedGradient/"):
     pass
 
 
-def calculate_statistical_criteria(feature_importance=None, criteria="absolute_error", path="../Results/IntegratedGradient/"):
+def calculate_statistical_criteria(feature_importance=None, criteria="absolute_error",
+                                   path="../Results/IntegratedGradient/"):
     file_name = "intgrad_" + criteria + ".csv"
     feature_importance = feature_importance.as_matrix()  # Convert to np.ndarray
     statistical_criteria = np.zeros(shape=(feature_importance.shape[1], 1))
@@ -100,12 +100,14 @@ def calculate_statistical_criteria(feature_importance=None, criteria="absolute_e
             feature_importance[:, i])] for i in range(num_features)])
     elif criteria == "relative_error":
         statistical_criteria = np.array([[(np.max(feature_importance[:, i]) - np.min(
-            feature_importance[:, i])) / (np.max(feature_importance[:, i]))]for i in range(feature_importance.shape[1])])
+            feature_importance[:, i])) / (np.max(feature_importance[:, i]))] for i in
+                                         range(feature_importance.shape[1])])
     np.savetxt(fname=path + file_name,
                X=statistical_criteria, delimiter=",")
 
 
-def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/IntegratedGradient/", save_path="../Results/IntegratedGradient/"):
+def plot_statistical_criteria(criteria="absolute_error", data_path="../Results/IntegratedGradient/",
+                              save_path="../Results/IntegratedGradient/"):
     data_path = data_path + "intgrad_" + criteria + ".csv"
     save_path = save_path + "intgrad_" + criteria + ".png"
     statistical_criteria = pd.read_csv(data_path, header=None).as_matrix()
