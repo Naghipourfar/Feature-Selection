@@ -10,7 +10,7 @@ from keras.callbacks import CSVLogger, History
 from keras.layers import BatchNormalization, Dense, Dropout, Input
 from keras.models import Model
 
-from .IntegratedGradient import integrated_gradients
+# from .IntegratedGradient import integrated_gradients
 
 """
     Created by Mohsen Naghipourfar on 6/15/18.
@@ -174,7 +174,7 @@ def compute_integrated_gradient(machine="damavand", save_path="../Results/Integr
     return pd.DataFrame(feature_importances)
 
 
-machine = "damavand"
+machine = "local"
 
 if __name__ == '__main__':
     general_path = "../Results/IntegratedGradient/"
@@ -191,8 +191,8 @@ if __name__ == '__main__':
             machine=machine, save_path=data_path, verbose=1)
         print("Data has been computed and saved!")
 
-    plot_distribution(feature_importance, path=distplot_path)
-    print("General Distribution has been drawn!")
+    # plot_distribution(feature_importance, path=distplot_path)
+    # print("General Distribution has been drawn!")
 
     calculate_statistical_criteria(
         feature_importance, criteria="absolute_error")
@@ -205,6 +205,6 @@ if __name__ == '__main__':
     # plot_statistical_criteria(criteria="relative_error")
     # print("Statistical Criteria RE Distribution plot has been drawn!")
 
-    make_summary_data(feature_importance)
-    print("Summary of all features has been made!")
+    # make_summary_data(feature_importance)
+    # print("Summary of all features has been made!")
     print("Finished!")
