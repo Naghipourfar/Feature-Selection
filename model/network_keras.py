@@ -22,6 +22,7 @@ DAMAVAND_LOCATION_FPKM_NORMALIZED = "~/f/Behrooz/dataset_local/fpkm_normalized.c
 DAMAVAND_LOCATION_CATEGORICAL_DISEASE = "~/f/Behrooz/dataset_local/disease.csv"
 DAMAVAND_LOCATION_ENCODED = '../Data/encoded_scae_dropout.csv'
 DAMAVAND_RESULTS_ENCODED = '../Results/CAE/encoded_results_{0}_{1}.csv'
+DAMAVAND_RESULTS_CLASSIFIER = '../Results/CAE/classifier_results_{0}_{1}.csv'
 
 LOCAL_LOCATION_FPKM_NORMALIZED = "../Data/fpkm_normalized.csv"
 LOCAL_LOCATION_CATEGORICAL_DISEASE = "../Data/disease.csv"
@@ -35,7 +36,7 @@ N_SAMPLES = 10787
 N_FEATURES = 19671
 N_DISEASES = 34
 N_BATCHES = 256
-N_EPOCHS = 30
+N_EPOCHS = 150
 N_BATCH_LEARN = 10
 N_RANDOM_FEATURES = 200
 neurons = {
@@ -130,7 +131,7 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
                     validation_data=(x_test.as_matrix(), y_test.as_matrix()),
                     verbose=2)
 
-    network.save("./classifier-noBatchNorm-noGaussian.h5")
+    # network.save("./classifier-noBatchNorm-noGaussian.h5")
 
     # layer_output.append(get_3rd_layer_output([x_train, True])[0])
     # print(layer_output)
@@ -140,11 +141,11 @@ def run(stddev, x_data, y_data, random_selection=True, seed=2018):
     # print("*" * 100)
 
     # Save Accuracy, Loss
-    # import csv
-    # with open('./result_noised_{0}.csv'.format(stddev), 'a') as file:
-    #     writer = csv.writer(file)
-    #     loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
-    #     writer.writerow([accuracy, loss])
+    import csv
+    with open(DAMAVAND_RESULTS_CLASSIFIER.format(stddev, N_RANDOM_FEATURES), 'a') as file:
+        writer = csv.writer(file)
+        loss, accuracy = network.evaluate(x_test.as_matrix(), y_test.as_matrix(), verbose=0)
+        writer.writerow([accuracy, loss])
 
     # class DummyCheckpoint(Callback):
     #     def on_train_begin(self, logs=None):
@@ -162,8 +163,8 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
     np.random.seed(seed=seed)
 
     # dataset_folder = "/s/" + machine_name + local_data_folder
-    # dataset_folder = '../Data/'
-    dataset_folder = "/s/chopin/a/grad/asharifi/f/Behrooz/dataset_local/"
+    dataset_folder = '/Users/Future/Desktop/Summer 2018/Bioinformatics/Feature Selection/Data/dataset_local/'
+    # dataset_folder = "/s/chopin/a/grad/asharifi/f/Behrooz/dataset_local/"
 
     df_m_rna_address = dataset_folder + "fpkm_normalized.csv"
     df_disease_address = dataset_folder + "disease.csv"
@@ -233,7 +234,7 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
         inputs_5 = Dropout(rate=0.25, name='dropout_4')(inputs_5)
 
         decoded_tcga = Dense(units=m_rna.shape[1], activation='relu', name="m_rna")(inputs_5)
-        cl_2 = Dense(units=categorical_disease.shape[1], activation="softmax", name="cl_disease")(encoded)
+        cl_2 = Dense(units=categorical_disease.shape[1], activation="softmax", name="cl_disease")(encoded_noise)
 
         scae = Model(inputs=inputs, outputs=[decoded_tcga, cl_2])
 
@@ -285,6 +286,8 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
     print(history.history.keys())
     print("fitting has just been finished")
 
+    model.save_weights("model_weights.h5")
+
     # save the model and encoded-layer output
     # model.save(filepath=result_folder + "scae-dropout.h5")
     #
@@ -318,12 +321,12 @@ def contractive_dropout_autoencoder(machine_name, local_data_folder, local_resul
 
     print("prediction process has just been finished")
 
-    import csv
-    with open(DAMAVAND_RESULTS_ENCODED.format(0.01, n_random_features), 'a') as file:
-        writer = csv.writer(file)
-        score = model.evaluate(m_rna_test_input, [m_rna_test, categorical_disease], verbose=0)[0]
-        print('score is ', score)
-        writer.writerow([float(score)])
+    # import csv
+    # with open(DAMAVAND_RESULTS_ENCODED.format(0.025, n_random_features), 'a') as file:
+    #     writer = csv.writer(file)
+    #     score = model.evaluate(m_rna_test_input, [m_rna_test, categorical_disease_test], verbose=0)[0]
+    #     print('score is ', score)
+    #     writer.writerow([float(score)])
 
     # for i in range(1, 51):
     #     print(i)
@@ -430,30 +433,32 @@ def auto_encoder(stddev=0.0, x_data=None, y_data=None, n_features=10, random_sel
         score = model.evaluate(x_test_random.as_matrix(), y_test.as_matrix(), verbose=0)
         print('score is ', score)
         writer.writerow([float(score)])
-
+K.in_top_k
 
 if __name__ == '__main__':
     # Load Data
-    x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
-    y_data = pd.read_csv(LOCAL_LOCATION_CATEGORICAL_DISEASE, header=None)
+    # x_data = pd.read_csv(LOCAL_LOCATION_FPKM_NORMALIZED, header=None)
+    # y_data = pd.read_csv(LOCAL_LOCATION_CATEGORICAL_DISEASE, header=None)
 
     # noise_matrix = 0.0 * np.random.normal(loc=0.0, scale=1.0, size=y_data.shape)
     # y_data += noise_matrix
 
-    label_encoder = LabelEncoder()
-    label_encoder.fit(y_data)
-    label_encoder = label_encoder.transform(y_data)
-    y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
+    # label_encoder = LabelEncoder()
+    # label_encoder.fit(y_data)
+    # label_encoder = label_encoder.transform(y_data)
+    # y_data = pd.DataFrame(keras.utils.to_categorical(label_encoder))
 
     # print(x_data.shape, y_data.shape)
     # for i in range(1000):
-    #     for n_features in reversed([2, 4, 8, 16, 32, 64, 128, 256, 512]):
-    #         auto_encoder(0.01, x_data, x_data, n_features=n_features, random_selection=True, seed=2018 * n_features)
-            # contractive_dropout_autoencoder(machine_name="damavand",
-            #                                 local_data_folder=DAMAVAND_LOCATION_FPKM_NORMALIZED,
-            #                                 local_result_folder="../Results/", model_specific="optimal_",
-            #                                 n_random_features=n_features, seed=2018 * n_features * i)
-
-    run(0, x_data, y_data, random_selection=False)
+    # for n_features in reversed([2, 4, 8, 16, 32, 64, 128, 256, 512]):
+        # auto_encoder(0.01, x_data, x_data, n_features=n_features, random_selection=True, seed=2018 * n_features)
+    n_features = 512;
+    contractive_dropout_autoencoder(machine_name="local",
+                                    local_data_folder=DAMAVAND_LOCATION_FPKM_NORMALIZED,
+                                    local_result_folder="../Results/", model_specific="optimal_",
+                                    n_random_features=n_features, seed=2018 * n_features)
+    # for i in range(1000):
+    #     for N_RANDOM_FEATURES in [50, 100, 150, 200]:
+    #         run(0, x_data, y_data, random_selection=False)
 
     print("Finished")
