@@ -1,2 +1,51 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea
+.idea/dictionaries/
+.idea/misc.xml
+.idea/modules.xml
+.idea/snapshots/
+.idea/workspace.xml
+.texpadtmp/
+12864_2017_Article_3906.pdf
+Data/
+New Results/
+Packages/
+Papers/
+Presentation/
+Results.zip
+Results/.ipynb_checkpoints/
+Results/All_Features/
+Results/Box plots/
+Results/DeepLift/
+Results/Heatmaps/
+Results/IntegratedGradient/
+Results/Random Feature Selection/New/
+Results/Random Feature Selection/result_200_new.csv
+Results/encoded/
+model/.ipynb_checkpoints/
+model/.texpadtmp/
+model/.vscode/
+model/AE.h5
+model/Behrooz/
+model/FinalAnalysis.ipynb
+model/IntegratedGradient/
+model/KSparseDense.py
+model/NN.py
+model/Proposal/
+model/Random Feature Selection/
+model/Result/
+model/Results/
+model/Temp/model_0.24617524445056915/
+model/Temp/model_0.24942049384117126/
+model/Temp/model_0_0.9725000262260437/
+model/Test
+model/Test2
+model/__pycache__/
+model/classifier-noBatchNorm-noGaussian.h5
+model/classifier.h5
+model/dec_shap_values.csv
+model/model_weights.h5
+model/result_noised_0.csv
+model/result_noised_1.csv
+model/top100.csv
+model/top100_deeplift.csv
