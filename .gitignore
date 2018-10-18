@@ -22,30 +22,30 @@ Results/IntegratedGradient/
 Results/Random Feature Selection/New/
 Results/Random Feature Selection/result_200_new.csv
 Results/encoded/
-model/.ipynb_checkpoints/
-model/.texpadtmp/
-model/.vscode/
-model/AE.h5
-model/Behrooz/
-model/FinalAnalysis.ipynb
-model/IntegratedGradient/
-model/KSparseDense.py
-model/NN.py
-model/Proposal/
-model/Random Feature Selection/
-model/Result/
-model/Results/
-model/Temp/model_0.24617524445056915/
-model/Temp/model_0.24942049384117126/
-model/Temp/model_0_0.9725000262260437/
-model/Test
-model/Test2
-model/__pycache__/
-model/classifier-noBatchNorm-noGaussian.h5
-model/classifier.h5
-model/dec_shap_values.csv
-model/model_weights.h5
-model/result_noised_0.csv
-model/result_noised_1.csv
-model/top100.csv
-model/top100_deeplift.csv
+Code/.ipynb_checkpoints/
+Code/.texpadtmp/
+Code/.vscode/
+Code/AE.h5
+Code/Behrooz/
+Code/FinalAnalysis.ipynb
+Code/IntegratedGradient/
+Code/KSparseDense.py
+Code/NN.py
+Code/Proposal/
+Code/Random Feature Selection/
+Code/Result/
+Code/Results/
+Code/Temp/model_0.24617524445056915/
+Code/Temp/model_0.24942049384117126/
+Code/Temp/model_0_0.9725000262260437/
+Code/Test
+Code/Test2
+Code/__pycache__/
+Code/classifier-noBatchNorm-noGaussian.h5
+Code/classifier.h5
+Code/dec_shap_values.csv
+Code/model_weights.h5
+Code/result_noised_0.csv
+Code/result_noised_1.csv
+Code/top100.csv
+Code/top100_deeplift.csv
